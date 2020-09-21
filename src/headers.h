@@ -7,4 +7,6 @@
 	typedef enum {NONE, FADINGIN, FADINGOUT} fades;
 	extern fades fade;
 
+	#define MAINTHREADCYCLERATE 50 //milliseconds that the main thread refreshes after
+
 #endif //_HEADERS_H

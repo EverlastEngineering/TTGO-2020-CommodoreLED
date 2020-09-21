@@ -10,5 +10,6 @@
 
 	void restartRetapTimer();
 	void restartDimmerTimer();
+	void processTimers();
 
 #endif // _TIMERS_H
