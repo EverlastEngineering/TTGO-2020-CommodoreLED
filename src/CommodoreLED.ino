@@ -3,6 +3,9 @@
  * Written by Everlast Engineering
  * */
 #include "config.h"
+#include "timers.h"
+#include "headers.h"
+#include "powermgm.h"
 
 typedef struct {
     lv_obj_t *hour1;
@@ -19,7 +22,6 @@ PCF8563_Class *rtc;
 BMA *sensor;
 
 LV_IMG_DECLARE(WatchFacePCB);
-LV_IMG_DECLARE(BootupOn1702);
 LV_IMG_DECLARE(Number0);
 LV_IMG_DECLARE(Number1);
 LV_IMG_DECLARE(Number2);
@@ -33,6 +35,9 @@ LV_IMG_DECLARE(Number9);
 LV_IMG_DECLARE(Colon);
 LV_IMG_DECLARE(Empty);
 LV_IMG_DECLARE(Dash);
+
+//hidden mode
+LV_IMG_DECLARE(BootupOn1702);
 
 static const lv_img_dsc_t *number[] = {
     &Number0,
@@ -50,39 +55,20 @@ static const lv_img_dsc_t *number[] = {
     &Empty //12
 };
 
-#define SHOWBATTERYTIMER 0
-#define DIMMERWINDOW 10000 //milliseconds before dimming screen and setting CPU to slow
-#define RETAPWINDOW 500 //milliseconds between multi tap event
+
 #define MAINTHREADCYCLERATE 50 //milliseconds that the main thread refreshes after
 bool irq = false;
 int digit[4] = {0,0,0,0};
 int displayed_digit[4] = {0,0,0,0};
 
-static int dimmerTimer = 0;
-static bool dimmerTimerActive = true;
-static int retapTimer = 0;
-static int retapCounter = 0;
-
-static int blLevel = 255;
-
-#define BLDIMMED 10
-#define BLBRIGHT 255
-
-typedef enum {NONE, FADINGIN, FADINGOUT} fades;
-static fades fade = NONE;
-
-typedef enum {MEDIUM, FULL} powermodes;
-static powermodes powermode = FULL;
-
-typedef enum {TIME, DATE, SECONDS, BATTERY, BLANK, OFF, BATTERY_MONITOR_MEDIUM, IAMSUCHABOYCHILD, DASHES} screens; 
-static screens screen = BLANK;
-
 typedef enum {TIME_MODE} modes;
 static modes mode = TIME_MODE;
 
-
 static int ctr_pressing = 0;
 static int ctr_pressed_repeat = 0;
+
+screens screen = BLANK;
+fades fade = NONE;
 
 void event_cb( lv_obj_t * obj, lv_event_t event ) {
     switch(event) {
@@ -158,6 +144,10 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
 		// 	break;
         case LV_EVENT_GESTURE:
             Serial.printf("Gesture Direction: %d\n", (int)lv_indev_get_gesture_dir(lv_indev_get_act()));
+            if ((int)lv_indev_get_gesture_dir(lv_indev_get_act()) == 0) {
+                hiddenMode();
+            }
+            
 			// Serial.println("LV_EVENT_GESTURE");
 			break;
         // case LV_EVENT_KEY:
@@ -356,8 +346,6 @@ void setup()
         
     }, 250, LV_TASK_PRIO_MID, nullptr);
     
-    dimmerTimer = 1;
-    
     lv_task_create([](lv_task_t *t) {
         if (fade == FADINGOUT && blLevel != BLDIMMED) {
             blLevel = blLevel - 10;
@@ -447,23 +435,28 @@ void setup()
         processTimers();
         displayNumerals();    
     }, MAINTHREADCYCLERATE, LV_TASK_PRIO_MID, nullptr);
+
+    
 }
 
-void restartDimmerTimer() {
-    if (!dimmerTimer) {
-        powerMode(FULL);
-        screen = BLANK;
-    }
-    dimmerTimer = DIMMERWINDOW;
+void hiddenMode() {
+    //c64 stuff
+    Serial.printf("Hidden Mode!\n");
+    lv_obj_t * screen_c64 = lv_obj_create(NULL, NULL);
+    lv_obj_t *C64BootupScreen = lv_img_create(screen_c64, NULL);
+    lv_img_set_src(C64BootupScreen, &BootupOn1702);
+    lv_obj_align(C64BootupScreen, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_scr_load_anim(screen_c64, LV_SCR_LOAD_ANIM_MOVE_RIGHT, 250, 0, false);
+    lv_obj_set_event_cb(screen_c64, event_cb);
 }
 
-void restartRetapTimer() {
-    retapTimer = RETAPWINDOW;
-}
+
+
+
 
 void processTimers() {
     if (dimmerTimer > 0 && dimmerTimerActive) {
-        // Serial.printf("dimmer: %d\n", dimmerTimer);
+        Serial.printf("dimmerTimer: %d\n", dimmerTimer);
         dimmerTimer = dimmerTimer - MAINTHREADCYCLERATE;
         if (dimmerTimer <= 0) {
             dimmerTimer = 0;
@@ -471,6 +464,7 @@ void processTimers() {
         }
     }
     if (retapTimer > 0) {
+        Serial.printf("retapTimer: %d\n", dimmerTimer);
         retapTimer = retapTimer - MAINTHREADCYCLERATE;
         if (retapTimer <= 0) {
             Serial.printf("retap reset\n");
@@ -482,19 +476,7 @@ void processTimers() {
     }
 }
 
-void powerMode(powermodes desiredPowerMode) {
-    powermode = desiredPowerMode;
-    switch (powermode) {
-        case MEDIUM:
-            fade = FADINGOUT;
-            setCpuFrequencyMhz(10);
-            break;
-        case FULL:
-            fade = FADINGIN;
-            setCpuFrequencyMhz(40);
-            break;
-    }
-}
+
 
 void displayNumerals() {
     if (displayed_digit[0] != digit[0]) {
