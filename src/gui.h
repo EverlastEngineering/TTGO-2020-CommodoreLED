@@ -11,7 +11,7 @@
 		lv_obj_t *colon;
 	} str_datetime_t;
 
-	static str_datetime_t g_data;
+	extern str_datetime_t g_data;
 
 	LV_IMG_DECLARE(WatchFacePCB);
 	LV_IMG_DECLARE(Number0);
@@ -31,21 +31,7 @@
 	//hidden mode
 	LV_IMG_DECLARE(BootupOn1702);
 
-	static const lv_img_dsc_t *number[] = {
-		&Number0,
-		&Number1,
-		&Number2,
-		&Number3,
-		&Number4,
-		&Number5,
-		&Number6,
-		&Number7,
-		&Number8,
-		&Number9,
-		&Colon, //10
-		&Dash, //11
-    &Empty //12
-	};
+	extern const lv_img_dsc_t *number[];
 	
 	void guiSetup();
 

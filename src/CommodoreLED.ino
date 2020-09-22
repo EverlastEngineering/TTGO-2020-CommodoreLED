@@ -57,6 +57,10 @@ void setup()
     //Lower the brightness
     watch->bl->adjust(10);
 
+    guiSetup();
+
+    
+
     
 
     sensor = watch->bma;
@@ -259,7 +263,7 @@ void setup()
         }
         processTimers();
         displayNumerals();    
-        hiddenMode();
+        // hiddenMode();
     }, MAINTHREADCYCLERATE, LV_TASK_PRIO_MID, nullptr);
 
     
