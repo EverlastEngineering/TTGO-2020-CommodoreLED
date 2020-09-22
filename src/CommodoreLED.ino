@@ -8,7 +8,7 @@
 #include "powermgm.h"
 #include "eventmgm.h"
 #include "gui.h"
-
+#include "qrcode.h"
 
 TTGOClass *watch = nullptr;
 PCF8563_Class *rtc;
@@ -33,19 +33,19 @@ void setup()
     watch = TTGOClass::getWatch();
     watch->begin();
     watch->lvgl_begin();
-    // QRCode qrcode;
-    // uint8_t qrcodeBytes[qrcode_getBufferSize(3)];
-    // qrcode_initText(&qrcode, qrcodeBytes, 3, ECC_LOW, "HELLO WORLD");
-    // for (uint y = 0; y < qrcode.size; y++) {
-    // for (uint x = 0; x < qrcode.size; x++) {
-    //     if (qrcode_getModule(&qrcode, x, y)) {
-    //         Serial.print("**");
-    //     } else {
-    //         Serial.print("  ");
-    //     }
-    // }
-    // Serial.print("\n");
-// }
+    QRCode qrcode;
+    uint8_t qrcodeBytes[qrcode_getBufferSize(6)];
+    qrcode_initText(&qrcode, qrcodeBytes, 6, ECC_LOW, "HELLO WORLD");
+    for (uint y = 0; y < qrcode.size; y++) {
+        for (uint x = 0; x < qrcode.size; x++) {
+            if (qrcode_getModule(&qrcode, x, y)) {
+                Serial.print("██");
+            } else {
+                Serial.print("  ");
+            }
+        }
+        Serial.print("\n");
+    }
     sensor = watch->bma;
     rtc = watch->rtc;
 
