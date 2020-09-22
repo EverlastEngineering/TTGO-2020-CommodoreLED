@@ -7,54 +7,14 @@
 #include "headers.h"
 #include "powermgm.h"
 #include "eventmgm.h"
+#include "gui.h"
 
-typedef struct {
-    lv_obj_t *hour1;
-    lv_obj_t *hour2;
-    lv_obj_t *minute1;
-    lv_obj_t *minute2;
-    lv_obj_t *colon;
-} str_datetime_t;
-
-static str_datetime_t g_data;
 
 TTGOClass *watch = nullptr;
 PCF8563_Class *rtc;
 BMA *sensor;
 
-LV_IMG_DECLARE(WatchFacePCB);
-LV_IMG_DECLARE(Number0);
-LV_IMG_DECLARE(Number1);
-LV_IMG_DECLARE(Number2);
-LV_IMG_DECLARE(Number3);
-LV_IMG_DECLARE(Number4);
-LV_IMG_DECLARE(Number5);
-LV_IMG_DECLARE(Number6);
-LV_IMG_DECLARE(Number7);
-LV_IMG_DECLARE(Number8);
-LV_IMG_DECLARE(Number9);
-LV_IMG_DECLARE(Colon);
-LV_IMG_DECLARE(Empty);
-LV_IMG_DECLARE(Dash);
 
-//hidden mode
-LV_IMG_DECLARE(BootupOn1702);
-
-static const lv_img_dsc_t *number[] = {
-    &Number0,
-    &Number1,
-    &Number2,
-    &Number3,
-    &Number4,
-    &Number5,
-    &Number6,
-    &Number7,
-    &Number8,
-    &Number9,
-    &Colon, //10
-    &Dash, //11
-    &Empty //12
-};
 
 
 bool irq = false;
@@ -73,6 +33,19 @@ void setup()
     watch = TTGOClass::getWatch();
     watch->begin();
     watch->lvgl_begin();
+    // QRCode qrcode;
+    // uint8_t qrcodeBytes[qrcode_getBufferSize(3)];
+    // qrcode_initText(&qrcode, qrcodeBytes, 3, ECC_LOW, "HELLO WORLD");
+    // for (uint y = 0; y < qrcode.size; y++) {
+    // for (uint x = 0; x < qrcode.size; x++) {
+    //     if (qrcode_getModule(&qrcode, x, y)) {
+    //         Serial.print("**");
+    //     } else {
+    //         Serial.print("  ");
+    //     }
+    // }
+    // Serial.print("\n");
+// }
     sensor = watch->bma;
     rtc = watch->rtc;
 
@@ -84,37 +57,7 @@ void setup()
     //Lower the brightness
     watch->bl->adjust(10);
 
-    lv_obj_set_event_cb(lv_scr_act(), event_cb);
-
-    lv_obj_t *img1 = lv_img_create(lv_scr_act(), NULL);
-    lv_img_set_src(img1, &WatchFacePCB);
-    lv_obj_align(img1, NULL, LV_ALIGN_CENTER, 0, 0);
-
-    g_data.minute2 = lv_img_create(lv_scr_act(), NULL);
-    lv_img_set_src(g_data.minute2, &Dash);
-    lv_obj_align(g_data.minute2, NULL, LV_ALIGN_CENTER, 64, 3);
-
-    g_data.minute1 = lv_img_create(lv_scr_act(), NULL);
-    lv_img_set_src(g_data.minute1, &Dash);
-    lv_obj_align(g_data.minute1, NULL, LV_ALIGN_CENTER, 26, 3);
-
-    g_data.colon = lv_img_create(lv_scr_act(), NULL);
-    lv_img_set_src(g_data.colon, &Colon);
-    lv_obj_align(g_data.colon, NULL, LV_ALIGN_CENTER, 0, 3);
-
-    g_data.hour2 = lv_img_create(lv_scr_act(), NULL);
-    lv_img_set_src(g_data.hour2, &Dash);
-    lv_obj_align(g_data.hour2, NULL, LV_ALIGN_CENTER, -29, 3);
-
-    g_data.hour1 = lv_img_create(lv_scr_act(), NULL);
-    lv_img_set_src(g_data.hour1, &Dash);
-    lv_obj_align(g_data.hour1, NULL, LV_ALIGN_CENTER, -67, 3);
-
-    lv_img_set_src(g_data.hour1, &Empty);
-    lv_img_set_src(g_data.hour2, &Empty);
-    lv_img_set_src(g_data.minute1, &Empty);
-    lv_img_set_src(g_data.minute2, &Empty);
-    lv_img_set_src(g_data.colon, &Empty);
+    
 
     sensor = watch->bma;
      // Accel parameter structure
@@ -316,6 +259,7 @@ void setup()
         }
         processTimers();
         displayNumerals();    
+        hiddenMode();
     }, MAINTHREADCYCLERATE, LV_TASK_PRIO_MID, nullptr);
 
     

@@ -9,12 +9,12 @@ void powerMode(powermodes desiredPowerMode) {
     powermode = desiredPowerMode;
     switch (powermode) {
         case MEDIUM:
-			Serial.printf("here");
+			// Serial.printf("here");
             fade = FADINGOUT;
             setCpuFrequencyMhz(10);
             break;
         case FULL:
-			Serial.printf("here2");
+			// Serial.printf("here2");
             fade = FADINGIN;
             setCpuFrequencyMhz(40);
             break;
