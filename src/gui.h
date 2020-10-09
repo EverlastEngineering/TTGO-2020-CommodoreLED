@@ -33,7 +33,11 @@
 
 	extern const lv_img_dsc_t *number[];
 	
-	void guiSetup();
+	void guiSetup(lv_obj_t * _screen) ;
+	void hiddenMode();
+	void clockMode(int animationTime);
+	void clockMode();
+	void displayNumerals();
 
 #endif // _GUI_H
 

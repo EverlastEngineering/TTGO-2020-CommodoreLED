@@ -3,10 +3,12 @@
 #include "powermgm.h"
 #include "eventmgm.h"
 #include "config.h"
+#include "gui.h"
 
 
 int ctr_pressing = 0;
 int ctr_pressed_repeat = 0;
+int secret_mode = 0;
 
 void event_cb( lv_obj_t * obj, lv_event_t event ) {
     switch(event) {
@@ -44,7 +46,7 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
                 screen = SECONDS;
             }
             else if (ctr_pressing > 0 && (screen == BLANK || (screen == BATTERY_MONITOR_MEDIUM && retapTimer == 0))) {
-                Serial.printf("LV_EVENT_PRESSING: %d\n", ctr_pressing);
+                // Serial.printf("LV_EVENT_PRESSING: %d\n", ctr_pressing);
                 screen = TIME;
             }
             restartDimmerTimer();
@@ -68,7 +70,7 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
             
 			break;
         case LV_EVENT_RELEASED:
-            Serial.println("LV_EVENT_RELEASED");
+            // Serial.println("LV_EVENT_RELEASED");
             ctr_pressing = ctr_pressed_repeat = 0;
 			break;
         // case LV_EVENT_DRAG_BEGIN:
@@ -81,9 +83,12 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
         //     Serial.println("LV_EVENT_DRAG_THROW_BEGIN");
 		// 	break;
         case LV_EVENT_GESTURE:
-            Serial.printf("Gesture Direction: %d\n", (int)lv_indev_get_gesture_dir(lv_indev_get_act()));
-            if ((int)lv_indev_get_gesture_dir(lv_indev_get_act()) == 0) {
-                // hiddenMode();
+            // Serial.printf("Gesture Direction: %d\n", (int)lv_indev_get_gesture_dir(lv_indev_get_act()));
+            detectSecretMode((int)lv_indev_get_gesture_dir(lv_indev_get_act()));
+
+            if ((int)lv_indev_get_gesture_dir(lv_indev_get_act()) == 1 && mode != AUTHENTIC_TIME_MDOE) {
+                mode = AUTHENTIC_TIME_MDOE;
+                clockMode(250);
             }
             
 			// Serial.println("LV_EVENT_GESTURE");
@@ -122,4 +127,39 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
         //     Serial.println("Unknown event");
 		// 	break;
         }
+}
+
+void detectSecretMode(lv_gesture_dir_t dir) {
+    if (dir == LV_GESTURE_DIR_TOP && secret_mode == 0) {
+        secret_mode = 1;
+    }
+    else if (dir == LV_GESTURE_DIR_TOP && secret_mode == 1) {
+        secret_mode = 2;
+    }
+    else if (dir == LV_GESTURE_DIR_BOTTOM && secret_mode == 2) {
+        secret_mode = 3;
+    }
+    else if (dir == LV_GESTURE_DIR_BOTTOM && secret_mode == 3) {
+        secret_mode = 4;
+    }
+    else if (dir == LV_GESTURE_DIR_LEFT && secret_mode == 4) {
+        secret_mode = 5;
+    }
+    else if (dir == LV_GESTURE_DIR_RIGHT && secret_mode == 5) {
+        secret_mode = 6;
+    }
+    else if (dir == LV_GESTURE_DIR_LEFT && secret_mode == 6) {
+        secret_mode = 7;
+    }
+    else if (dir == LV_GESTURE_DIR_RIGHT && secret_mode == 7) {
+        secret_mode = 8;
+    }
+    else {
+        secret_mode = 0;
+    }
+    if (secret_mode == 8) {
+        secret_mode = 0;
+        hiddenMode();
+    }
+    Serial.printf("secret: %d\n", secret_mode);
 }

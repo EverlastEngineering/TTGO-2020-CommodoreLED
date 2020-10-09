@@ -2,6 +2,7 @@
 #include "timers.h"
 #include "headers.h"
 #include "powermgm.h"
+#include "eventmgm.h"
 
 int retapTimer = 0;
 int dimmerTimer = 0;
@@ -24,7 +25,7 @@ void restartDimmerTimer() {
 
 void processTimers() {
     if (dimmerTimer > 0 && dimmerTimerActive) {
-        Serial.printf("dimmerTimer: %d\n", dimmerTimer);
+        // Serial.printf("dimmerTimer: %d\n", dimmerTimer);
         dimmerTimer = dimmerTimer - MAINTHREADCYCLERATE;
         if (dimmerTimer <= 0) {
             dimmerTimer = 0;
@@ -32,11 +33,11 @@ void processTimers() {
         }
     }
     if (retapTimer > 0) {
-        Serial.printf("retapTimer: %d\n", dimmerTimer);
+        // Serial.printf("retapTimer: %d\n", dimmerTimer);
         retapTimer = retapTimer - MAINTHREADCYCLERATE;
         if (retapTimer <= 0) {
             Serial.printf("retap reset\n");
-            retapCounter = retapTimer = 0;
+            retapCounter = retapTimer = secret_mode = 0;
             if (screen != BATTERY_MONITOR_MEDIUM) {
                 screen = BLANK;
             }

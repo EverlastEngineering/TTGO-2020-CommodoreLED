@@ -14,16 +14,11 @@ TTGOClass *watch = nullptr;
 PCF8563_Class *rtc;
 BMA *sensor;
 
-
-
-
 bool irq = false;
 int digit[4] = {0,0,0,0};
 int displayed_digit[4] = {0,0,0,0};
 
-typedef enum {TIME_MODE} modes;
-static modes mode = TIME_MODE;
-
+modes mode = AUTHENTIC_TIME_MDOE;
 screens screen = BLANK;
 fades fade = NONE;
 
@@ -33,19 +28,19 @@ void setup()
     watch = TTGOClass::getWatch();
     watch->begin();
     watch->lvgl_begin();
-    QRCode qrcode;
-    uint8_t qrcodeBytes[qrcode_getBufferSize(6)];
-    qrcode_initText(&qrcode, qrcodeBytes, 6, ECC_LOW, "HELLO WORLD");
-    for (uint y = 0; y < qrcode.size; y++) {
-        for (uint x = 0; x < qrcode.size; x++) {
-            if (qrcode_getModule(&qrcode, x, y)) {
-                Serial.print("██");
-            } else {
-                Serial.print("  ");
-            }
-        }
-        Serial.print("\n");
-    }
+    // QRCode qrcode;
+    // uint8_t qrcodeBytes[qrcode_getBufferSize(6)];
+    // qrcode_initText(&qrcode, qrcodeBytes, 6, ECC_LOW, "HELLO WORLD");
+    // for (uint y = 0; y < qrcode.size; y++) {
+    //     for (uint x = 0; x < qrcode.size; x++) {
+    //         if (qrcode_getModule(&qrcode, x, y)) {
+    //             Serial.print("██");
+    //         } else {
+    //             Serial.print("  ");
+    //         }
+    //     }
+    //     Serial.print("\n");
+    // }
     sensor = watch->bma;
     rtc = watch->rtc;
 
@@ -57,11 +52,7 @@ void setup()
     //Lower the brightness
     watch->bl->adjust(10);
 
-    guiSetup();
-
-    
-
-    
+    clockMode();
 
     sensor = watch->bma;
      // Accel parameter structure
@@ -269,40 +260,7 @@ void setup()
     
 }
 
-void hiddenMode() {
-    //c64 stuff
-    Serial.printf("Hidden Mode!\n");
-    lv_obj_t * screen_c64 = lv_obj_create(NULL, NULL);
-    lv_obj_t *C64BootupScreen = lv_img_create(screen_c64, NULL);
-    lv_img_set_src(C64BootupScreen, &BootupOn1702);
-    lv_obj_align(C64BootupScreen, NULL, LV_ALIGN_CENTER, 0, 0);
-    lv_scr_load_anim(screen_c64, LV_SCR_LOAD_ANIM_MOVE_RIGHT, 250, 0, false);
-    lv_obj_set_event_cb(screen_c64, event_cb);
-}
 
-void displayNumerals() {
-    if (displayed_digit[0] != digit[0]) {
-        if (digit[0]==0) {
-            lv_img_set_src(g_data.hour1, &Empty);
-        }
-        else {
-            lv_img_set_src(g_data.hour1, number[digit[0]]);
-        }
-        displayed_digit[0] = digit[0];
-    }
-    if (displayed_digit[1] != digit[1]) {
-        lv_img_set_src(g_data.hour2, number[digit[1]]);
-        displayed_digit[1] = digit[1];
-    }
-    if (displayed_digit[2] != digit[2]) {
-        lv_img_set_src(g_data.minute1, number[digit[2]]);
-        displayed_digit[2] = digit[2];
-    }
-    if (displayed_digit[3] != digit[3]) {
-        lv_img_set_src(g_data.minute2, number[digit[3]]);
-        displayed_digit[3] = digit[3];
-    }
-}
 
 void loop()
 {

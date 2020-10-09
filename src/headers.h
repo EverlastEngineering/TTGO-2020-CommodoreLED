@@ -7,6 +7,13 @@
 	typedef enum {NONE, FADINGIN, FADINGOUT} fades;
 	extern fades fade;
 
+	typedef enum {AUTHENTIC_TIME_MDOE, ALWAYS_ON_TIME_MODE, CYCLE_TIME_MODE, SECRET_MODE} modes;
+	extern modes mode;
+
 	#define MAINTHREADCYCLERATE 50 //milliseconds that the main thread refreshes after
+
+	extern bool irq;
+	extern int digit[];
+	extern int displayed_digit[];
 
 #endif //_HEADERS_H

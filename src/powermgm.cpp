@@ -16,7 +16,7 @@ void powerMode(powermodes desiredPowerMode) {
         case FULL:
 			// Serial.printf("here2");
             fade = FADINGIN;
-            setCpuFrequencyMhz(40); //240 works?!
+            setCpuFrequencyMhz(40); 
             break;
     }
 }
