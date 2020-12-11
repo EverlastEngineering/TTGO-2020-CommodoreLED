@@ -21,8 +21,6 @@ int displayed_digit[4] = {0,0,0,0};
 modes mode = AUTHENTIC_TIME_MODE;
 screens screen = BLANK;
 fades fade = NONE;
-RTC_Date curr_datetime;
-int batteryLevel;
 
 void setup()
 {
@@ -30,6 +28,7 @@ void setup()
     watch = TTGOClass::getWatch();
     watch->begin();
     watch->lvgl_begin();
+    watch->motor_begin();
     // QRCode qrcode;
     // uint8_t qrcodeBytes[qrcode_getBufferSize(6)];
     // qrcode_initText(&qrcode, qrcodeBytes, 6, ECC_LOW, "HELLO WORLD");
@@ -197,9 +196,6 @@ void setup()
             }
             watch->bl->adjust(blLevel);
         }
-
-        curr_datetime = rtc->getDateTime();
-        batteryLevel = watch->power->getBattPercentage();
 
         if (powermode == LOWPOWER || (powermode != FULLPOWER && mode != BATTERY_MONITOR && mode != ALWAYS_ON_TIME_MODE)) {
             return;

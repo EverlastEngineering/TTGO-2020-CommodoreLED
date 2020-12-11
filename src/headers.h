@@ -16,6 +16,5 @@
 	extern bool irq;
 	extern int digit[];
 	extern int displayed_digit[];
-	extern int batteryLevel;
 
 #endif //_HEADERS_H

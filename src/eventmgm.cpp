@@ -203,6 +203,7 @@ void detectSecretMode(lv_gesture_dir_t dir) {
     }
     if (secret_mode == 8) {
         secret_mode = 0;
+        watch->shake();
         hiddenMode();
     }
     Serial.printf("secret: %d\n", secret_mode);
