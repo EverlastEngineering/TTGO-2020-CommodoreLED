@@ -36,7 +36,17 @@ void processTimers() {
         retapTimer = retapTimer - MAINTHREADCYCLERATE;
         if (retapTimer <= 0) {
             // Serial.printf("retap reset\n");
+            if (retapCounter == 4) 
+            {
+                debug = !debug;
+            }
+            else if (retapCounter == 5) 
+            {
+                screen = BATTERY;
+                mode = BATTERY_MONITOR;
+            }
             retapCounter = retapTimer = secret_mode = 0;
+            resetDisplay();
         }
     }
 }

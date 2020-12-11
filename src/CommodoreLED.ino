@@ -18,6 +18,8 @@ bool irq = false;
 int digit[4] = {0,0,0,0};
 int displayed_digit[4] = {0,0,0,0};
 
+bool debug = false;
+
 modes mode = AUTHENTIC_TIME_MODE;
 screens screen = BLANK;
 fades fade = NONE;
@@ -163,6 +165,31 @@ void setup()
             // Double-click interrupt
             // if (sensor->isDoubleClick()) {
             // }
+        }
+        watch->power->readIRQ();
+        if (watch->power->isPEKShortPressIRQ())
+        {
+            Serial.println("Side Button Press");
+            if (powermode == FULLPOWER) {
+                powerMode(LOWPOWER);
+            }
+            else {
+                powerMode(FULLPOWER);
+            }
+            watch->power->clearIRQ();
+        }    
+        
+        
+        if (debug) {
+            Serial.printf("isChargeing: %d\n", watch->power->isChargeing());
+            Serial.printf("isBatteryConnect: %d\n", watch->power->isBatteryConnect());
+            Serial.printf("isChargeingEnable: %d\n", watch->power->isChargeingEnable());
+            Serial.printf("getBattVoltage: %f\n", round(watch->power->getBattVoltage())/1000);
+            Serial.printf("getBattDischargeCurrent: %f\n", watch->power->getBattDischargeCurrent());
+            char buf[128];
+            watch->tft->setTextColor(0x444, TFT_BLACK);
+            snprintf(buf, sizeof(buf), "Battery: %.2f", round(watch->power->getBattVoltage())/1000);
+            watch->tft->drawString(buf, 10, 10, 2);
         }
         
     }, 250, LV_TASK_PRIO_MID, nullptr);

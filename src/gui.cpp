@@ -83,7 +83,7 @@ void clockMode() {
 
 void displayNumerals() {
     if (displayed_digit[0] != digit[0]) {
-        if (digit[0]==0) {
+        if (digit[0]==0 && screen == TIME) {
             lv_img_set_src(g_data.hour1, &Empty);
         }
         else {
@@ -149,6 +149,20 @@ void processDisplay() {
             digit[1] =  0; //empty
             digit[2] =  0; //empty
             digit[3] =  8; //empty
+            colonVisible = 0;
+        }
+        else if (screen == D3B9) {
+            digit[0] =  0; //empty
+            digit[1] =  3; //empty
+            digit[2] =  8; //empty
+            digit[3] =  9; //empty
+            colonVisible = 0;
+        }
+        else if (screen == B477) {
+            digit[0] =  8; //empty
+            digit[1] =  4; //empty
+            digit[2] =  7; //empty
+            digit[3] =  7; //empty
             colonVisible = 0;
         }
         else if (screen == BATTERY || mode == BATTERY_MONITOR) {

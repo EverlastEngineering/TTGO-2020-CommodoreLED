@@ -4,7 +4,7 @@
 	#include "config.h"
 	void event_cb( lv_obj_t * obj, lv_event_t event );
 	void detectSecretMode(lv_gesture_dir_t dir);
-
+	extern void resetDisplay();
 	extern int secret_mode;
 
 #endif // _EVENTMGM_H

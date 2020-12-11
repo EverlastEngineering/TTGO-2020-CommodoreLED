@@ -20,28 +20,32 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
             } 
             if (retapTimer != 0) {
                 retapCounter++;
-                if (screen == TIME && retapCounter == 1) {
+                if (retapCounter == 1) {
                     Serial.printf("Date screen.\n");
                     screen = DATE;
                 }
-                if (retapCounter == 2) {
+                else if (retapCounter == 2) {
                     Serial.printf("Battery screen.\n");
                     screen = BATTERY;
                 }
-                if (retapCounter == 3 || retapCounter == 6) {
+                else if (retapCounter == 3 || retapCounter == 6) {
                     Serial.printf("Blank screen.\n");
                     screen = DASHES;
                 }
-                if (retapCounter == 5) {
-                    Serial.printf("Long-term battery monitor screen.\n");
-                    screen = BATTERY;
-                    mode = BATTERY_MONITOR;
+                else if (retapCounter == 4) {
+                    Serial.printf("Toggle debug.\n");
+                    screen = D3B9;
                 }
-                if (retapCounter == 10) {
-                    Serial.printf("Boob.\n");
+                else if (retapCounter == 5) {
+                    Serial.printf("Long-term battery monitor screen.\n");
+                    screen = B477;
+                }
+                else if (retapCounter == 10) {
+                    Serial.printf("Boob. Teehee.\n");
                     screen = IAMSUCHABOYCHILD;
                 }
-                Serial.printf("retapCounter: %d\n", retapCounter);
+                // Serial.printf("retapCounter: %d\n", retapCounter);
+                // Serial.printf("screen: %d\n", screen);
             }
             else if (screen == BLANK) {
                 screen = TIME;
@@ -83,20 +87,9 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
 			break;
         case LV_EVENT_RELEASED:
             // Serial.println("LV_EVENT_RELEASED");
-            ctr_pressing = ctr_pressed_repeat = 0;
-            if (mode == ALWAYS_ON_TIME_MODE) {
-                screen = TIME;
-                // Serial.printf("Screen: time\n");
+            if (screen == TIME) {
+                resetDisplay();
             }
-            else if (mode == BATTERY_MONITOR) {
-                screen = BATTERY;
-                // Serial.printf("Screen: battery\n");
-            }
-            else if (mode != BATTERY_MONITOR) {
-                screen = BLANK;
-                // Serial.printf("Screen: BLANK\n");
-            }
-            processDisplay();
 			break;
         // case LV_EVENT_DRAG_BEGIN:
         //     Serial.println("LV_EVENT_DRAG_BEGIN");
@@ -129,10 +122,6 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
                 }
                 Serial.println("ALWAYS_ON_TIME_MODE");
                 mode = ALWAYS_ON_TIME_MODE;
-            }
-            else if (direction == LV_GESTURE_DIR_LEFT) {
-                Serial.println("Screen off.");
-                powerMode(LOWPOWER);
             }
             
 			// Serial.println("LV_EVENT_GESTURE");
@@ -171,6 +160,23 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
         //     Serial.println("Unknown event");
 		// 	break;
         }
+}
+
+void resetDisplay() {
+                ctr_pressing = ctr_pressed_repeat = 0;
+                if (mode == ALWAYS_ON_TIME_MODE) {
+                    screen = TIME;
+                    // Serial.printf("Screen: time\n");
+                }
+                else if (mode == BATTERY_MONITOR) {
+                    screen = BATTERY;
+                    // Serial.printf("Screen: battery\n");
+                }
+                else if (mode != BATTERY_MONITOR) {
+                    screen = BLANK;
+                    // Serial.printf("Screen: BLANK\n");
+                }
+                processDisplay();
 }
 
 void detectSecretMode(lv_gesture_dir_t dir) {
