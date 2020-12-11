@@ -18,9 +18,11 @@ bool irq = false;
 int digit[4] = {0,0,0,0};
 int displayed_digit[4] = {0,0,0,0};
 
-modes mode = AUTHENTIC_TIME_MDOE;
+modes mode = AUTHENTIC_TIME_MODE;
 screens screen = BLANK;
 fades fade = NONE;
+RTC_Date curr_datetime;
+int batteryLevel;
 
 void setup()
 {
@@ -167,11 +169,23 @@ void setup()
     }, 250, LV_TASK_PRIO_MID, nullptr);
     
     lv_task_create([](lv_task_t *t) {
-        if (fade == FADINGOUT && blLevel != BLDIMMED) {
+        // Serial.println("lv_task@50ms");
+        if (powermode == LOWPOWER && fade == FADINGOUT) {
+            blLevel = blLevel - 63; 
+            if (blLevel <= 0) {
+                Serial.printf("turn off display\n");
+                fade = NONE;
+                blLevel = retapCounter = retapTimer = dimmerTimer = 0;
+                setCpuFrequencyMhz(10);
+            }
+            watch->bl->adjust(blLevel);
+        }
+        else if (fade == FADINGOUT && blLevel != BLDIMMED) {
             blLevel = blLevel - 10;
             if (blLevel <= BLDIMMED) {
                 blLevel = BLDIMMED;
                 fade = NONE;
+                setCpuFrequencyMhz(10);
             }
             watch->bl->adjust(blLevel);
         }
@@ -184,77 +198,14 @@ void setup()
             watch->bl->adjust(blLevel);
         }
 
-        if (powermode != FULL && screen != BATTERY_MONITOR_MEDIUM) {
+        curr_datetime = rtc->getDateTime();
+        batteryLevel = watch->power->getBattPercentage();
+
+        if (powermode == LOWPOWER || (powermode != FULLPOWER && mode != BATTERY_MONITOR && mode != ALWAYS_ON_TIME_MODE)) {
             return;
         }
         
-        RTC_Date curr_datetime = rtc->getDateTime();
-        int colonVisible = 0;
- 
-        if (screen == TIME) {
-            digit[0] =  (curr_datetime.hour/10) % 10;
-            digit[1] =  curr_datetime.hour % 10;
-            digit[2] =  (curr_datetime.minute/10) % 10;
-            digit[3] =  curr_datetime.minute % 10;
-            colonVisible = curr_datetime.second % 2;
-        }
-        else if (screen == SECONDS) {
-            digit[0] =  12; //empty
-            digit[1] =  12; //empty
-            digit[2] =  (curr_datetime.second/10) % 10;
-            digit[3] =  curr_datetime.second % 10;
-            colonVisible = 0;
-        }
-        else if (screen == DATE) {
-            digit[0] =  (curr_datetime.month/10) % 10;
-            digit[1] =  curr_datetime.month % 10;
-            digit[2] =  (curr_datetime.day/10) % 10;
-            digit[3] =  curr_datetime.day % 10;
-            colonVisible = 0;
-        }
-        else if (screen == BLANK) {
-            digit[0] =  12; //empty
-            digit[1] =  12; //empty
-            digit[2] =  12; //empty
-            digit[3] =  12; //empty
-            colonVisible = 0;
-        }
-        else if (screen == DASHES) {
-            digit[0] =  11; //empty
-            digit[1] =  11; //empty
-            digit[2] =  11; //empty
-            digit[3] =  11; //empty
-            colonVisible = 1;
-        }
-        else if (screen == IAMSUCHABOYCHILD) {
-            digit[0] =  8; //empty
-            digit[1] =  0; //empty
-            digit[2] =  0; //empty
-            digit[3] =  8; //empty
-            colonVisible = 0;
-        }
-        else if (screen == BATTERY || BATTERY_MONITOR_MEDIUM) {
-            int level = watch->power->getBattPercentage();
-            // Serial.printf("Battery: %d%%\n", level);
-            digit[0] = 8;
-            digit[1] = (level/100) % 10;
-            if (digit[1] == 0) {
-                digit[1] = 11;
-            }
-            digit[2] = (level/10) % 10;
-            digit[3] = (level/1) % 10;
-            colonVisible = 0;
-        }
-        if (colonVisible == 1) 
-        {
-            lv_img_set_src(g_data.colon, &Colon);
-        }
-        else {
-            lv_img_set_src(g_data.colon, &Empty);
-        }
-        processTimers();
-        displayNumerals();    
-        // hiddenMode();
+        processDisplay();
     }, MAINTHREADCYCLERATE, LV_TASK_PRIO_MID, nullptr);
 
     

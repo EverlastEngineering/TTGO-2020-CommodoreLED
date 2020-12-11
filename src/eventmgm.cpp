@@ -11,9 +11,13 @@ int ctr_pressed_repeat = 0;
 int secret_mode = 0;
 
 void event_cb( lv_obj_t * obj, lv_event_t event ) {
+    // Serial.println("event_cb");
     switch(event) {
         case LV_EVENT_PRESSED:
             // Serial.println("LV_EVENT_PRESSED");
+            if (powermode != FULLPOWER) {
+                powerMode(FULLPOWER);
+            } 
             if (retapTimer != 0) {
                 retapCounter++;
                 if (screen == TIME && retapCounter == 1) {
@@ -30,7 +34,8 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
                 }
                 if (retapCounter == 5) {
                     Serial.printf("Long-term battery monitor screen.\n");
-                    screen = BATTERY_MONITOR_MEDIUM;
+                    screen = BATTERY;
+                    mode = BATTERY_MONITOR;
                 }
                 if (retapCounter == 10) {
                     Serial.printf("Boob.\n");
@@ -38,19 +43,26 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
                 }
                 Serial.printf("retapCounter: %d\n", retapCounter);
             }
+            else if (screen == BLANK) {
+                screen = TIME;
+            }
+            processDisplay();
             break;
         case LV_EVENT_PRESSING:
+            // Serial.printf("LV_EVENT_PRESSING: %d\n", ctr_pressing);
             ctr_pressing++;
             if (ctr_pressing > 60 && screen == TIME) {
                 // Serial.printf("LV_EVENT_PRESSING: %d\n", ctr_pressing);
                 screen = SECONDS;
             }
-            else if (ctr_pressing > 0 && (screen == BLANK || (screen == BATTERY_MONITOR_MEDIUM && retapTimer == 0))) {
+            else if (ctr_pressing > 0 && (screen == BLANK || (mode == BATTERY_MONITOR && retapTimer == 0))) {
                 // Serial.printf("LV_EVENT_PRESSING: %d\n", ctr_pressing);
-                screen = TIME;
+                // screen = TIME;
             }
-            restartDimmerTimer();
-            restartRetapTimer();
+            if (blLevel) {
+                restartDimmerTimer();
+                restartRetapTimer();
+            }
 			break;
         // case LV_EVENT_PRESS_LOST:
         //     Serial.println("LV_EVENT_PRESS_LOST");
@@ -72,6 +84,19 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
         case LV_EVENT_RELEASED:
             // Serial.println("LV_EVENT_RELEASED");
             ctr_pressing = ctr_pressed_repeat = 0;
+            if (mode == ALWAYS_ON_TIME_MODE) {
+                screen = TIME;
+                // Serial.printf("Screen: time\n");
+            }
+            else if (mode == BATTERY_MONITOR) {
+                screen = BATTERY;
+                // Serial.printf("Screen: battery\n");
+            }
+            else if (mode != BATTERY_MONITOR) {
+                screen = BLANK;
+                // Serial.printf("Screen: BLANK\n");
+            }
+            processDisplay();
 			break;
         // case LV_EVENT_DRAG_BEGIN:
         //     Serial.println("LV_EVENT_DRAG_BEGIN");
@@ -83,12 +108,31 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
         //     Serial.println("LV_EVENT_DRAG_THROW_BEGIN");
 		// 	break;
         case LV_EVENT_GESTURE:
-            // Serial.printf("Gesture Direction: %d\n", (int)lv_indev_get_gesture_dir(lv_indev_get_act()));
-            detectSecretMode((int)lv_indev_get_gesture_dir(lv_indev_get_act()));
+            restartRetapTimer();
+            Serial.printf("Gesture Direction: %d\n", (int)lv_indev_get_gesture_dir(lv_indev_get_act()));
+            lv_gesture_dir_t direction = (int)lv_indev_get_gesture_dir(lv_indev_get_act());
 
-            if ((int)lv_indev_get_gesture_dir(lv_indev_get_act()) == 1 && mode != AUTHENTIC_TIME_MDOE) {
-                mode = AUTHENTIC_TIME_MDOE;
-                clockMode(250);
+            detectSecretMode(direction);
+            if (secret_mode > 1) {
+                return;
+            }
+            if ((direction) == LV_GESTURE_DIR_BOTTOM) {
+                if (mode == SECRET_MODE) {
+                    clockMode(250);
+                }
+                Serial.println("AUTHENTIC_TIME_MODE");
+                mode = AUTHENTIC_TIME_MODE;
+            }
+            else if ((direction) == LV_GESTURE_DIR_TOP) {
+                if (mode == SECRET_MODE) {
+                    clockMode(250);
+                }
+                Serial.println("ALWAYS_ON_TIME_MODE");
+                mode = ALWAYS_ON_TIME_MODE;
+            }
+            else if (direction == LV_GESTURE_DIR_LEFT) {
+                Serial.println("Screen off.");
+                powerMode(LOWPOWER);
             }
             
 			// Serial.println("LV_EVENT_GESTURE");

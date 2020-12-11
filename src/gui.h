@@ -38,6 +38,7 @@
 	void clockMode(int animationTime);
 	void clockMode();
 	void displayNumerals();
+	void processDisplay();
 
 #endif // _GUI_H
 

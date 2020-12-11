@@ -16,8 +16,7 @@ void restartRetapTimer() {
 void restartDimmerTimer() {
     // Serial.printf("dimmerTimer: %d\n",dimmerTimer);
     if (!dimmerTimer) {
-        powerMode(FULL);
-        screen = BLANK;
+        powerMode(FULLPOWER);
     }
     dimmerTimer = DIMMERWINDOW;
 }
@@ -29,18 +28,15 @@ void processTimers() {
         dimmerTimer = dimmerTimer - MAINTHREADCYCLERATE;
         if (dimmerTimer <= 0) {
             dimmerTimer = 0;
-            powerMode(MEDIUM);
+            powerMode(MEDIUMPOWER);
         }
     }
     if (retapTimer > 0) {
         // Serial.printf("retapTimer: %d\n", dimmerTimer);
         retapTimer = retapTimer - MAINTHREADCYCLERATE;
         if (retapTimer <= 0) {
-            Serial.printf("retap reset\n");
+            // Serial.printf("retap reset\n");
             retapCounter = retapTimer = secret_mode = 0;
-            if (screen != BATTERY_MONITOR_MEDIUM) {
-                screen = BLANK;
-            }
         }
     }
 }

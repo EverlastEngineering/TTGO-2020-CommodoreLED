@@ -3,7 +3,7 @@
 	#define BLDIMMED 10
 	#define BLBRIGHT 255
 
-	typedef enum {MEDIUM, FULL} powermodes;
+	typedef enum {LOWPOWER, MEDIUMPOWER, FULLPOWER} powermodes;
 	extern powermodes powermode;
 	extern int blLevel;
 

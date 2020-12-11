@@ -2,19 +2,24 @@
 #include "headers.h"
 #include "config.h"
 
-powermodes powermode = FULL;
+powermodes powermode = FULLPOWER;
 int blLevel = 10;
 
 void powerMode(powermodes desiredPowerMode) {
     powermode = desiredPowerMode;
     switch (powermode) {
-        case MEDIUM:
-			// Serial.printf("here");
+        case LOWPOWER:
+			Serial.println("LOWPOWER");
             fade = FADINGOUT;
-            setCpuFrequencyMhz(10);
+            // setCpuFrequencyMhz(10);
             break;
-        case FULL:
-			// Serial.printf("here2");
+        case MEDIUMPOWER:
+			Serial.println("MEDIUMPOWER");
+            fade = FADINGOUT;
+            // setCpuFrequencyMhz(10);
+            break;
+        case FULLPOWER:
+			Serial.println("FULLPOWER");
             fade = FADINGIN;
             setCpuFrequencyMhz(40); 
             break;

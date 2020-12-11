@@ -23,7 +23,6 @@ const lv_img_dsc_t *number[] = {
 str_datetime_t g_data;
 
 void guiSetup(lv_obj_t * _screen) {
-	lv_obj_set_event_cb(_screen, event_cb);
 
 	lv_obj_t *img1 = lv_img_create(_screen, NULL);
     lv_img_set_src(img1, &WatchFacePCB);
@@ -70,7 +69,7 @@ void hiddenMode() {
 }
 
 void clockMode(int animationTime) {
-	mode = AUTHENTIC_TIME_MDOE;
+	mode = AUTHENTIC_TIME_MODE;
     Serial.printf("Clock Mode!\n");
     lv_obj_t * _screen = lv_obj_create(NULL, NULL);
     guiSetup(_screen);
@@ -104,4 +103,72 @@ void displayNumerals() {
         lv_img_set_src(g_data.minute2, number[digit[3]]);
         displayed_digit[3] = digit[3];
     }
+}
+
+void processDisplay() {
+        int colonVisible = 0;
+ 
+        if (screen == TIME) {
+            digit[0] =  (curr_datetime.hour/10) % 10;
+            digit[1] =  curr_datetime.hour % 10;
+            digit[2] =  (curr_datetime.minute/10) % 10;
+            digit[3] =  curr_datetime.minute % 10;
+            colonVisible = curr_datetime.second % 2;
+        }
+        else if (screen == SECONDS) {
+            digit[0] =  12; //empty
+            digit[1] =  12; //empty
+            digit[2] =  (curr_datetime.second/10) % 10;
+            digit[3] =  curr_datetime.second % 10;
+            colonVisible = 0;
+        }
+        else if (screen == DATE) {
+            digit[0] =  (curr_datetime.month/10) % 10;
+            digit[1] =  curr_datetime.month % 10;
+            digit[2] =  (curr_datetime.day/10) % 10;
+            digit[3] =  curr_datetime.day % 10;
+            colonVisible = 0;
+        }
+        else if (screen == BLANK) {
+            digit[0] =  12; //empty
+            digit[1] =  12; //empty
+            digit[2] =  12; //empty
+            digit[3] =  12; //empty
+            colonVisible = 0;
+        }
+        else if (screen == DASHES) {
+            digit[0] =  11; //empty
+            digit[1] =  11; //empty
+            digit[2] =  11; //empty
+            digit[3] =  11; //empty
+            colonVisible = 1;
+        }
+        else if (screen == IAMSUCHABOYCHILD) {
+            digit[0] =  8; //empty
+            digit[1] =  0; //empty
+            digit[2] =  0; //empty
+            digit[3] =  8; //empty
+            colonVisible = 0;
+        }
+        else if (screen == BATTERY || mode == BATTERY_MONITOR) {
+            // Serial.printf("Battery: %d%%\n", batteryLevel);
+            digit[0] = 8;
+            digit[1] = (batteryLevel/100) % 10;
+            if (digit[1] == 0) {
+                digit[1] = 11;
+            }
+            digit[2] = (batteryLevel/10) % 10;
+            digit[3] = (batteryLevel/1) % 10;
+            colonVisible = 0;
+        }
+        if (colonVisible == 1) 
+        {
+            lv_img_set_src(g_data.colon, &Colon);
+        }
+        else {
+            lv_img_set_src(g_data.colon, &Empty);
+        }
+        processTimers();
+        displayNumerals();    
+        // hiddenMode();
 }
