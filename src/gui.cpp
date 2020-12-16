@@ -108,10 +108,12 @@ void displayNumerals() {
 void processDisplay() {
         int colonVisible = 0;
         RTC_Date curr_datetime = watch->rtc->getDateTime();
-
+        int hour = curr_datetime.hour;
+        if (hour == 0) hour = 12;
+        if (hour > 12) hour = hour-12;
         if (screen == TIME) {
-            digit[0] =  (curr_datetime.hour/10) % 10;
-            digit[1] =  curr_datetime.hour % 10;
+            digit[0] =  (hour/10) % 10;
+            digit[1] =  hour % 10;
             digit[2] =  (curr_datetime.minute/10) % 10;
             digit[3] =  curr_datetime.minute % 10;
             colonVisible = curr_datetime.second % 2;
@@ -166,8 +168,13 @@ void processDisplay() {
             colonVisible = 0;
         }
         else if (screen == BATTERY || mode == BATTERY_MONITOR) {
-            int batteryLevel = watch->power->getBattPercentage();
+            
+            float batteryVoltage = watch->power->getBattVoltage() / 1000;
+            // int batteryLevel = watch->power->getBattVoltage(); 
+            int batteryLevel = (batteryVoltage - 3.5) * 2 * 100;
             // Serial.printf("Battery: %d%%\n", batteryLevel);
+            if (batteryLevel > 100) batteryLevel = 100;
+            if (batteryLevel < 0) batteryLevel = 0;
             digit[0] = 8;
             digit[1] = (batteryLevel/100) % 10;
             if (digit[1] == 0) {

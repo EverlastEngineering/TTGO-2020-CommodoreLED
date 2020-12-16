@@ -50,6 +50,7 @@ void setup()
     // Use compile time
     rtc->check();
 
+    // watch->rtc->setDateTime(2020, 12, 11, 0, 22, 00);
     watch->openBL();
 
     //Lower the brightness
@@ -170,14 +171,22 @@ void setup()
         if (watch->power->isPEKShortPressIRQ())
         {
             Serial.println("Side Button Press");
-            if (powermode == FULLPOWER) {
+            if (powermode == FULLPOWER || powermode == MEDIUMPOWER) {
                 powerMode(LOWPOWER);
+                targetpowermode = LOWPOWER;
             }
-            else {
+            else if (powermode == LOWPOWER) {
                 powerMode(FULLPOWER);
+                targetpowermode = MEDIUMPOWER;
+                restartDimmerTimer();
             }
             watch->power->clearIRQ();
-        }    
+        }
+        else if (watch->power->isPEKLongtPressIRQ()) {
+            Serial.println("Side Button Long Press");
+        }
+
+        
         
         
         if (debug) {
@@ -190,6 +199,8 @@ void setup()
             watch->tft->setTextColor(0x444, TFT_BLACK);
             snprintf(buf, sizeof(buf), "Battery: %.2f", round(watch->power->getBattVoltage())/1000);
             watch->tft->drawString(buf, 10, 10, 2);
+            snprintf(buf, sizeof(buf), "Battery %%: %.0f", round(watch->power->getBattPercentage()));
+            watch->tft->drawString(buf, 10, 30, 2);
         }
         
     }, 250, LV_TASK_PRIO_MID, nullptr);

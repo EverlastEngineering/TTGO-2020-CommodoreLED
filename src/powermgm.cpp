@@ -3,6 +3,7 @@
 #include "config.h"
 
 powermodes powermode = FULLPOWER;
+powermodes targetpowermode = MEDIUMPOWER;
 int blLevel = 10;
 
 void powerMode(powermodes desiredPowerMode) {

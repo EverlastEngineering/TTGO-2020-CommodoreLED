@@ -24,11 +24,11 @@ void restartDimmerTimer() {
 
 void processTimers() {
     if (dimmerTimer > 0 && dimmerTimerActive) {
-        // Serial.printf("dimmerTimer: %d\n", dimmerTimer);
+        Serial.printf("dimmerTimer: %d\n", dimmerTimer);
         dimmerTimer = dimmerTimer - MAINTHREADCYCLERATE;
         if (dimmerTimer <= 0) {
             dimmerTimer = 0;
-            powerMode(MEDIUMPOWER);
+            powerMode(targetpowermode);
         }
     }
     if (retapTimer > 0) {

@@ -4,7 +4,10 @@
 	#define BLBRIGHT 255
 
 	typedef enum {LOWPOWER, MEDIUMPOWER, FULLPOWER} powermodes;
+	
 	extern powermodes powermode;
+	extern powermodes targetpowermode;
+	
 	extern int blLevel;
 
 	void powerMode(powermodes desiredPowerMode);
