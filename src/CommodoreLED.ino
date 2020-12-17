@@ -157,6 +157,7 @@ void setup()
             // The wrist must be worn correctly, otherwise the data will not come out
             if (sensor->isTilt()) {
                 restartDimmerTimer();
+                restartClockFaceTimer();
                 Serial.println("isTilt");
                 // tft->setTextColor(random(0xFFFF), TFT_BLACK);
                 // tft->setCursor(xoffset, 160);
@@ -174,6 +175,7 @@ void setup()
             if (powermode == FULLPOWER || powermode == MEDIUMPOWER) {
                 powerMode(LOWPOWER);
                 targetpowermode = LOWPOWER;
+                restartClockFaceTimer();
             }
             else if (powermode == LOWPOWER) {
                 powerMode(FULLPOWER);

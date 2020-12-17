@@ -6,6 +6,7 @@
 
 int retapTimer = 0;
 int dimmerTimer = 0;
+int clockFaceTimer = 0;
 bool dimmerTimerActive = true;
 int retapCounter = 0;
 
@@ -19,6 +20,14 @@ void restartDimmerTimer() {
         powerMode(FULLPOWER);
     }
     dimmerTimer = DIMMERWINDOW;
+}
+
+void restartClockFaceTimer() {
+    // Serial.printf("clockFaceTimer: %d\n",clockFaceTimer);
+    clockFaceTimer = CLOCKFACEWINDOW;
+    if (screen == BLANK) {
+        screen = TIME;
+    }
 }
 
 
@@ -47,6 +56,15 @@ void processTimers() {
             }
             retapCounter = retapTimer = secret_mode = 0;
             resetDisplay();
+        }
+    }
+    if (clockFaceTimer > 0) {
+        clockFaceTimer = clockFaceTimer - MAINTHREADCYCLERATE;
+        if (clockFaceTimer <= 0) {
+            clockFaceTimer = 0;
+            if (screen == TIME) {
+                screen = BLANK;
+            }
         }
     }
 }
