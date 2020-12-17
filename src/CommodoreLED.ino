@@ -11,8 +11,6 @@
 #include "qrcode.h"
 
 TTGOClass *watch = nullptr;
-PCF8563_Class *rtc;
-BMA *sensor;
 
 bool irq = false;
 int digit[4] = {0,0,0,0};
@@ -44,11 +42,9 @@ void setup()
     //     }
     //     Serial.print("\n");
     // }
-    sensor = watch->bma;
-    rtc = watch->rtc;
 
     // Use compile time
-    rtc->check();
+    watch->rtc->check();
 
     // watch->rtc->setDateTime(2020, 12, 11, 0, 22, 00);
     watch->openBL();
@@ -58,7 +54,6 @@ void setup()
 
     clockMode();
 
-    sensor = watch->bma;
      // Accel parameter structure
     Acfg cfg;
     /*!
@@ -105,13 +100,13 @@ void setup()
     cfg.perf_mode = BMA4_CONTINUOUS_MODE; //BMA4_CIC_AVG_MODE?
 
     // Configure the BMA423 accelerometer
-    sensor->accelConfig(cfg);
+    watch->bma->accelConfig(cfg);
 
     // Enable BMA423 accelerometer
     // Warning : Need to use feature, you must first enable the accelerometer
     // Warning : Need to use feature, you must first enable the accelerometer
     // Warning : Need to use feature, you must first enable the accelerometer
-    sensor->enableAccel();
+    watch->bma->enableAccel();
 
     pinMode(BMA423_INT1, INPUT);
     attachInterrupt(BMA423_INT1, [] {
@@ -122,7 +117,7 @@ void setup()
     // Enable BMA423 isStepCounter feature
     // sensor->enableFeature(BMA423_STEP_CNTR, true);
     // Enable BMA423 isTilt feature
-    sensor->enableFeature(BMA423_TILT, true);
+    watch->bma->enableFeature(BMA423_TILT, true);
     // Enable BMA423 isDoubleClick feature
     // sensor->enableFeature(BMA423_WAKEUP, true);
 
@@ -131,7 +126,7 @@ void setup()
 
     // Turn on feature interrupt
     // sensor->enableStepCountInterrupt();
-    sensor->enableTiltInterrupt();
+    watch->bma->enableTiltInterrupt();
     // It corresponds to isDoubleClick interrupt
     // sensor->enableWakeupInterrupt();
     
@@ -142,7 +137,7 @@ void setup()
             do {
                 // Read the BMA423 interrupt status,
                 // need to wait for it to return to true before continuing
-                rlst =  sensor->readInterrupt();
+                rlst =  watch->bma->readInterrupt();
             } while (!rlst);
 
             // Check if it is a step interrupt
@@ -155,10 +150,10 @@ void setup()
             //     // tft->print(stepCount);
             // }
             // The wrist must be worn correctly, otherwise the data will not come out
-            if (sensor->isTilt()) {
                 restartDimmerTimer();
                 restartClockFaceTimer();
                 Serial.println("isTilt");
+            if (watch->bma->isTilt()) {
                 // tft->setTextColor(random(0xFFFF), TFT_BLACK);
                 // tft->setCursor(xoffset, 160);
                 // tft->print("isTilt:");
