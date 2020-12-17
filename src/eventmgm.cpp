@@ -5,7 +5,6 @@
 #include "config.h"
 #include "gui.h"
 
-
 int ctr_pressing = 0;
 int ctr_pressed_repeat = 0;
 int secret_mode = 0;
@@ -15,6 +14,8 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
     switch(event) {
         case LV_EVENT_PRESSED:
             // Serial.println("LV_EVENT_PRESSED");
+            clockFaceTimer = 0;
+            restartDimmerTimer();
             if (powermode != FULLPOWER) {
                 powerMode(FULLPOWER);
             } 

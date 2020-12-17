@@ -16,7 +16,7 @@ void restartRetapTimer() {
 
 void restartDimmerTimer() {
     // Serial.printf("dimmerTimer: %d\n",dimmerTimer);
-    if (!dimmerTimer) {
+    if (!dimmerTimer && powermode != FULLPOWER) {
         powerMode(FULLPOWER);
     }
     dimmerTimer = DIMMERWINDOW;
@@ -24,9 +24,11 @@ void restartDimmerTimer() {
 
 void restartClockFaceTimer() {
     // Serial.printf("clockFaceTimer: %d\n",clockFaceTimer);
-    clockFaceTimer = CLOCKFACEWINDOW;
-    if (screen == BLANK) {
-        screen = TIME;
+    if (mode == AUTHENTIC_TIME_MODE) {
+        clockFaceTimer = CLOCKFACEWINDOW;
+        if (screen == BLANK) {
+            screen = TIME;
+        }
     }
 }
 
@@ -62,7 +64,7 @@ void processTimers() {
         clockFaceTimer = clockFaceTimer - MAINTHREADCYCLERATE;
         if (clockFaceTimer <= 0) {
             clockFaceTimer = 0;
-            if (screen == TIME) {
+            if (screen == TIME && mode == AUTHENTIC_TIME_MODE) {
                 screen = BLANK;
             }
         }

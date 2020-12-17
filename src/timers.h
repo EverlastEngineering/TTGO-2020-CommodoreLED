@@ -6,6 +6,7 @@
 
 	extern int retapTimer;
 	extern int dimmerTimer;
+	extern int clockFaceTimer;
 	extern bool dimmerTimerActive;
 	extern int retapCounter;
 

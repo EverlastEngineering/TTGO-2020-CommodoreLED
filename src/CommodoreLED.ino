@@ -20,7 +20,7 @@ bool debug = false;
 
 modes mode = AUTHENTIC_TIME_MODE;
 screens screen = BLANK;
-fades fade = NONE;
+fades fade = FADINGIN;
 
 void setup()
 {
@@ -150,10 +150,12 @@ void setup()
             //     // tft->print(stepCount);
             // }
             // The wrist must be worn correctly, otherwise the data will not come out
-                restartDimmerTimer();
-                restartClockFaceTimer();
-                Serial.println("isTilt");
             if (watch->bma->isTilt()) {
+                if (powermode == LOWPOWER) {
+                    restartDimmerTimer();
+                    restartClockFaceTimer();
+                    Serial.println("isTilt");
+                }
                 // tft->setTextColor(random(0xFFFF), TFT_BLACK);
                 // tft->setCursor(xoffset, 160);
                 // tft->print("isTilt:");
@@ -170,17 +172,18 @@ void setup()
             if (powermode == FULLPOWER || powermode == MEDIUMPOWER) {
                 powerMode(LOWPOWER);
                 targetpowermode = LOWPOWER;
-                restartClockFaceTimer();
             }
             else if (powermode == LOWPOWER) {
                 powerMode(FULLPOWER);
                 targetpowermode = MEDIUMPOWER;
                 restartDimmerTimer();
+                restartClockFaceTimer();
             }
             watch->power->clearIRQ();
         }
         else if (watch->power->isPEKLongtPressIRQ()) {
             Serial.println("Side Button Long Press");
+            watch->power->clearIRQ();
         }
 
         
@@ -239,7 +242,8 @@ void setup()
         processDisplay();
     }, MAINTHREADCYCLERATE, LV_TASK_PRIO_MID, nullptr);
 
-    
+    restartDimmerTimer();
+    restartClockFaceTimer();
 }
 
 
