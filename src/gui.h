@@ -37,8 +37,11 @@
 	void hiddenMode();
 	void clockMode(int animationTime);
 	void clockMode();
+	void setClock();
 	void displayNumerals();
 	void processDisplay();
+	void setTime();
+	void receiveEventForSetClock(directions direction);
 
 #endif // _GUI_H
 

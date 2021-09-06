@@ -10,6 +10,9 @@
 #include "gui.h"
 #include "qrcode.h"
 
+
+//to do: missing 0 on first boot
+
 TTGOClass *watch = nullptr;
 
 bool irq = false;
@@ -172,6 +175,7 @@ void setup()
             if (powermode == FULLPOWER || powermode == MEDIUMPOWER) {
                 powerMode(LOWPOWER);
                 targetpowermode = LOWPOWER;
+                screen = TIME; // put the screen back to TIME to 'reset' the watch if you get it all effed up lol
             }
             else if (powermode == LOWPOWER) {
                 powerMode(FULLPOWER);
@@ -188,8 +192,11 @@ void setup()
 
         
         
-        
-        if (debug) {
+        if (debug && screen == SETCLOCK) {
+            // Serial.printf("debugging setclock\n");
+           
+        }
+        else if (debug) {
             Serial.printf("isChargeing: %d\n", watch->power->isChargeing());
             Serial.printf("isBatteryConnect: %d\n", watch->power->isBatteryConnect());
             Serial.printf("isChargeingEnable: %d\n", watch->power->isChargeingEnable());

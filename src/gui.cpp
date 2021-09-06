@@ -167,12 +167,12 @@ void processDisplay() {
             digit[3] =  7; //T
             colonVisible = 0;
         }
-        else if (screen == SETCLOCK) {
+        else if (screen == SET537) {
             digit[0] =  5; //S
             digit[1] =  3; //E
             digit[2] =  7; //T
             digit[3] =  12; //empty
-            colonVisible = curr_datetime.second % 2;
+            colonVisible = 0;
         }
         else if (screen == BATTERY || mode == BATTERY_MONITOR) {
             
@@ -191,6 +191,9 @@ void processDisplay() {
             digit[3] = (batteryLevel/1) % 10;
             colonVisible = 0;
         }
+        else if (screen == SETCLOCK) {
+            setClock();
+        }
         if (colonVisible == 1) 
         {
             lv_img_set_src(g_data.colon, &Colon);
@@ -201,4 +204,105 @@ void processDisplay() {
         processTimers();
         displayNumerals();    
         // hiddenMode();
+}
+
+// setClock parameters
+int settingDigit = 0; // which digit is being set in 0 first digit format
+int timeSetCandidateDigit = 0; // the 'candidate' digit 
+
+
+int proposed_digit[4] = {0,0,0,0};
+int settingClock = 0;
+int setClockTimer = 0;
+
+int proposedHour = 0;
+int proposedMinute = 0;
+
+void setClock() {
+    setClockTimer++; // used to flash the digit very quickly to show which is being set
+    // Serial.printf("setClockTimer %d\n", setClockTimer);
+    // int colonVisible = 0;
+
+    if (!settingClock) {
+        settingClock = 1;
+        RTC_Date curr_datetime = watch->rtc->getDateTime();
+        proposedHour = curr_datetime.hour;
+        proposedMinute = curr_datetime.minute;
+        Serial.printf("Setting up clock to hour: %d", proposedHour);
+        proposed_digit[0] = (proposedHour/10) % 10;
+        proposed_digit[1] = proposedHour % 10;
+        proposed_digit[2] = (proposedMinute/10) % 10;
+        proposed_digit[3] = proposedMinute % 10;
+    }
+
+    // char buf[128];
+    // watch->tft->setTextColor(0x444, TFT_BLACK);
+    // snprintf(buf, sizeof(buf), "24 hour clock is used to set time");
+    // watch->tft->drawString(buf, 10, 10, 2);
+
+    digit[0] =  proposed_digit[0];
+    digit[1] =  proposed_digit[1];
+    digit[2] =  proposed_digit[2];
+    digit[3] =  proposed_digit[3];
+    
+    if (setClockTimer % 2) {
+        digit[settingDigit] = 12; //empty
+    }
+    else {
+        digit[settingDigit+1] = 12; //empty
+    }
+}
+
+
+void setTime() {
+    if (!settingClock) 
+        return;
+    screen = TIME;
+    settingClock = 0;
+    Serial.println("TIME SET");
+    RTC_Date curr_datetime = watch->rtc->getDateTime();
+    watch->rtc->setDateTime(curr_datetime.year, curr_datetime.month, curr_datetime.day, proposedHour, proposedMinute, 0);
+}
+
+void receiveEventForSetClock(directions direction) {
+    // RTC_Date curr_datetime = watch->rtc->getDateTime();
+
+    if (direction == UP)
+    {
+        Serial.println("UP");
+        if (settingDigit==0) {
+            proposedHour++;
+        }
+        if (settingDigit==2) {
+            proposedMinute++;
+        }
+    }
+    else if (direction == DOWN)
+    {
+        Serial.println("DOWN");
+        if (settingDigit==0) {
+            proposedHour--;
+            if (proposedHour < 0) proposedHour = 0;
+            if (proposedHour > 23) proposedHour = 23;
+        }
+        if (settingDigit==2) {
+            proposedMinute--;
+            if (proposedMinute < 0) proposedMinute = 0;
+            if (proposedMinute > 59) proposedMinute = 59;
+        }
+    }
+    else if (direction == RIGHT)
+    {
+        Serial.println("RIGHT");
+        settingDigit = 2;
+    }
+    else if (direction == LEFT)
+    {
+        Serial.println("LEFT");
+        settingDigit = 0;
+    }
+    proposed_digit[0] = (proposedHour/10) % 10;
+    proposed_digit[1] = proposedHour % 10;
+    proposed_digit[2] = (proposedMinute/10) % 10;
+    proposed_digit[3] = proposedMinute % 10;
 }

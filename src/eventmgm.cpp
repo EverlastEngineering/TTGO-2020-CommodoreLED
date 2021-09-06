@@ -13,12 +13,16 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
     // Serial.println("event_cb");
     switch(event) {
         case LV_EVENT_PRESSED:
-            // Serial.println("LV_EVENT_PRESSED");
+            Serial.println("LV_EVENT_PRESSED");
             clockFaceTimer = 0;
             restartDimmerTimer();
             if (powermode != FULLPOWER) {
                 powerMode(FULLPOWER);
-            } 
+            }
+            if (screen == SETCLOCK) {
+                Serial.printf("Set clock set, capture tap.\n");
+                break;
+            }
             if (retapTimer != 0) {
                 retapCounter++;
                 if (retapCounter == 1) {
@@ -27,7 +31,7 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
                 }
                 else if (retapCounter == 2) {
                     Serial.printf("Set clock.\n");
-                    screen = SETCLOCK;
+                    screen = SET537;
                 }
                 else if (retapCounter == 3) {
                     Serial.printf("Battery screen.\n");
@@ -58,7 +62,7 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
             processDisplay();
             break;
         case LV_EVENT_PRESSING:
-            // Serial.printf("LV_EVENT_PRESSING: %d\n", ctr_pressing);
+            Serial.printf("LV_EVENT_PRESSING: %d\n", ctr_pressing);
             ctr_pressing++;
             if (ctr_pressing > 60 && screen == TIME) {
                 // Serial.printf("LV_EVENT_PRESSING: %d\n", ctr_pressing);
@@ -67,6 +71,14 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
             else if (ctr_pressing > 0 && (screen == BLANK || (mode == BATTERY_MONITOR && retapTimer == 0))) {
                 // Serial.printf("LV_EVENT_PRESSING: %d\n", ctr_pressing);
                 // screen = TIME;
+            }
+            else if (ctr_pressing > 60 && screen == SETCLOCK) {
+                // Serial.printf("LV_EVENT_PRESSING: %d\n", ctr_pressing);
+                screen = SET537;
+            }
+            else if (ctr_pressing > 120 && screen == SET537) {
+                // Serial.printf("LV_EVENT_PRESSING: %d\n", ctr_pressing);
+                screen = BLANK;
             }
             if (blLevel) {
                 restartDimmerTimer();
@@ -95,6 +107,12 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
             if (screen == TIME) {
                 resetDisplay();
             }
+            if (screen == SET537) {
+                Serial.println("screen set to SET537");
+                if (ctr_pressing > 60) {
+                    setTime();
+                }
+            }
 			break;
         // case LV_EVENT_DRAG_BEGIN:
         //     Serial.println("LV_EVENT_DRAG_BEGIN");
@@ -107,6 +125,7 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
 		// 	break;
         case LV_EVENT_GESTURE:
             restartRetapTimer();
+            ctr_pressing = 0; // reset the touch timer just in case the swipes are fast
             Serial.printf("Gesture Direction: %d\n", (int)lv_indev_get_gesture_dir(lv_indev_get_act()));
             lv_gesture_dir_t direction = (int)lv_indev_get_gesture_dir(lv_indev_get_act());
 
@@ -118,17 +137,44 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
                 if (mode == SECRET_MODE) {
                     clockMode(250);
                 }
-                Serial.println("AUTHENTIC_TIME_MODE");
-                mode = AUTHENTIC_TIME_MODE;
+                else if (screen == SETCLOCK) {
+                    // fire msg to decrement selected digit
+                    Serial.println("Number down!");
+                    receiveEventForSetClock(DOWN);
+                }
+                else {
+                    Serial.println("AUTHENTIC_TIME_MODE");
+                    mode = AUTHENTIC_TIME_MODE;
+                }
             }
             else if ((direction) == LV_GESTURE_DIR_TOP) {
                 if (mode == SECRET_MODE) {
                     clockMode(250);
                 }
-                Serial.println("ALWAYS_ON_TIME_MODE");
-                mode = ALWAYS_ON_TIME_MODE;
+                else if (screen == SETCLOCK) {
+                    // fire msg to increment selected digit
+                    Serial.println("Number up!");
+                    receiveEventForSetClock(UP);
+                }
+                else {
+                    Serial.println("ALWAYS_ON_TIME_MODE");
+                    mode = ALWAYS_ON_TIME_MODE;
+                }
             }
-            
+            else if ((direction) == LV_GESTURE_DIR_RIGHT) {
+                if (screen == SETCLOCK) {
+                    // fire msg to decrement selected digit
+                    Serial.println("Number right!");
+                    receiveEventForSetClock(RIGHT);
+                }
+            }
+            else if ((direction) == LV_GESTURE_DIR_LEFT) {
+                if (screen == SETCLOCK) {
+                    // fire msg to decrement selected digit
+                    Serial.println("Number left!");
+                    receiveEventForSetClock(LEFT);
+                }
+            }
 			// Serial.println("LV_EVENT_GESTURE");
 			break;
         // case LV_EVENT_KEY:
@@ -169,17 +215,20 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
 
 void resetDisplay() {
                 ctr_pressing = ctr_pressed_repeat = 0;
-                if (mode == ALWAYS_ON_TIME_MODE) {
+                if (screen == SETCLOCK) {
+                    Serial.printf("Screen: setclock from resetDisplay\n");
+                }
+                else if (mode == ALWAYS_ON_TIME_MODE) {
                     screen = TIME;
-                    // Serial.printf("Screen: time\n");
+                    Serial.printf("Screen: time\n");
                 }
                 else if (mode == BATTERY_MONITOR) {
                     screen = BATTERY;
-                    // Serial.printf("Screen: battery\n");
+                    Serial.printf("Screen: battery\n");
                 }
                 else if (mode != BATTERY_MONITOR) {
                     screen = BLANK;
-                    // Serial.printf("Screen: BLANK\n");
+                    Serial.printf("Screen: BLANK\n");
                 }
                 processDisplay();
 }
