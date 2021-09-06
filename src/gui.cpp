@@ -140,32 +140,39 @@ void processDisplay() {
             colonVisible = 0;
         }
         else if (screen == DASHES) {
-            digit[0] =  11; //empty
-            digit[1] =  11; //empty
-            digit[2] =  11; //empty
-            digit[3] =  11; //empty
+            digit[0] =  11; //dash
+            digit[1] =  11; //dash
+            digit[2] =  11; //dash
+            digit[3] =  11; //dash
             colonVisible = 1;
         }
         else if (screen == IAMSUCHABOYCHILD) {
-            digit[0] =  8; //empty
-            digit[1] =  0; //empty
-            digit[2] =  0; //empty
-            digit[3] =  8; //empty
+            digit[0] =  8; //B
+            digit[1] =  0; //O
+            digit[2] =  0; //O
+            digit[3] =  8; //B
             colonVisible = 0;
         }
         else if (screen == D3B9) {
-            digit[0] =  0; //empty
-            digit[1] =  3; //empty
-            digit[2] =  8; //empty
-            digit[3] =  9; //empty
+            digit[0] =  0; //D
+            digit[1] =  3; //E
+            digit[2] =  8; //B
+            digit[3] =  9; //G
             colonVisible = 0;
         }
         else if (screen == B477) {
-            digit[0] =  8; //empty
-            digit[1] =  4; //empty
-            digit[2] =  7; //empty
-            digit[3] =  7; //empty
+            digit[0] =  8; //B
+            digit[1] =  4; //A
+            digit[2] =  7; //T
+            digit[3] =  7; //T
             colonVisible = 0;
+        }
+        else if (screen == SETCLOCK) {
+            digit[0] =  5; //S
+            digit[1] =  3; //E
+            digit[2] =  7; //T
+            digit[3] =  12; //empty
+            colonVisible = curr_datetime.second % 2;
         }
         else if (screen == BATTERY || mode == BATTERY_MONITOR) {
             

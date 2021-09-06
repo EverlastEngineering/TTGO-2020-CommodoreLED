@@ -35,7 +35,7 @@ void restartClockFaceTimer() {
 
 void processTimers() {
     if (dimmerTimer > 0 && dimmerTimerActive) {
-        Serial.printf("dimmerTimer: %d\n", dimmerTimer);
+        // Serial.printf("dimmerTimer: %d\n", dimmerTimer);
         dimmerTimer = dimmerTimer - MAINTHREADCYCLERATE;
         if (dimmerTimer <= 0) {
             dimmerTimer = 0;
@@ -46,15 +46,15 @@ void processTimers() {
         // Serial.printf("retapTimer: %d\n", dimmerTimer);
         retapTimer = retapTimer - MAINTHREADCYCLERATE;
         if (retapTimer <= 0) {
-            // Serial.printf("retap reset\n");
-            if (retapCounter == 4) 
-            {
-                debug = !debug;
-            }
-            else if (retapCounter == 5) 
+            Serial.printf("retap reset\n");
+            if (retapCounter == 5) 
             {
                 screen = BATTERY;
                 mode = BATTERY_MONITOR;
+            }
+            else if (retapCounter == 6) 
+            {
+                debug = !debug;
             }
             retapCounter = retapTimer = secret_mode = 0;
             resetDisplay();

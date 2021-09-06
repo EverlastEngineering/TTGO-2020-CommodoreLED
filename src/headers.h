@@ -2,7 +2,7 @@
 #ifndef _HEADERS_H
 	#define _HEADERS_H
 	
-	typedef enum {TIME, DATE, SECONDS, BATTERY, BLANK, OFF, IAMSUCHABOYCHILD, DASHES, D3B9, B477} screens; 
+	typedef enum {TIME, DATE, SECONDS, BATTERY, BLANK, OFF, IAMSUCHABOYCHILD, DASHES, D3B9, B477, SETCLOCK} screens; 
 	extern screens screen;
 
 	typedef enum {NONE, FADINGIN, FADINGOUT} fades;

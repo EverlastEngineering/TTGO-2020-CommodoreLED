@@ -26,20 +26,24 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
                     screen = DATE;
                 }
                 else if (retapCounter == 2) {
+                    Serial.printf("Set clock.\n");
+                    screen = SETCLOCK;
+                }
+                else if (retapCounter == 3) {
                     Serial.printf("Battery screen.\n");
                     screen = BATTERY;
                 }
-                else if (retapCounter == 3 || retapCounter == 6) {
+                else if (retapCounter == 4 || retapCounter == 7) {
                     Serial.printf("Blank screen.\n");
                     screen = DASHES;
-                }
-                else if (retapCounter == 4) {
-                    Serial.printf("Toggle debug.\n");
-                    screen = D3B9;
                 }
                 else if (retapCounter == 5) {
                     Serial.printf("Long-term battery monitor screen.\n");
                     screen = B477;
+                }
+                else if (retapCounter == 6) {
+                    Serial.printf("Toggle debug.\n");
+                    screen = D3B9;
                 }
                 else if (retapCounter == 10) {
                     Serial.printf("Boob. Teehee.\n");
