@@ -31,17 +31,17 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
                     Serial.printf("Date screen.\n");
                     screen = DATE;
                 }
-                else if (retapCounter == 2) {
-                    Serial.printf("Set clock.\n");
-                    screen = SET537;
+                else if (retapCounter == 2 || retapCounter == 7) {
+                    Serial.printf("Blank screen.\n");
+                    screen = DASHES;
                 }
                 else if (retapCounter == 3) {
                     Serial.printf("Battery screen.\n");
                     screen = BATTERY;
                 }
-                else if (retapCounter == 4 || retapCounter == 7) {
-                    Serial.printf("Blank screen.\n");
-                    screen = DASHES;
+                else if (retapCounter == 4) {
+                    Serial.printf("Set clock.\n");
+                    screen = SET537;
                 }
                 else if (retapCounter == 5) {
                     Serial.printf("Long-term battery monitor screen.\n");

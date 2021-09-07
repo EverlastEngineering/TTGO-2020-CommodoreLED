@@ -48,7 +48,7 @@ void processTimers() {
 
         if (retapTimer <= 0) {
             // Serial.printf("retap reset\n");
-            if (retapCounter == 2) 
+            if (retapCounter == 4) 
             {
                 Serial.println("screen = SETCLOCK;");
                 screen = SETCLOCK;

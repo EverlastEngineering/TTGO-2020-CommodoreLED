@@ -272,6 +272,7 @@ void setMonthDay() {
 }
 
 void setClock() {
+    restartDimmerTimer();
     setClockTimer++; // used to flash the digit very quickly to show which is being set
     // Serial.printf("setClockTimer %d\n", setClockTimer);
     // int colonVisible = 0;
@@ -316,7 +317,6 @@ void setTime() {
     screen = TIME;
     settingClock = 0;
     Serial.println("TIME SET");
-    RTC_Date curr_datetime = watch->rtc->getDateTime();
     watch->rtc->setDateTime(proposedYear, proposedMonth, proposedDay, proposedHour, proposedMinute, 0);
 }
 
