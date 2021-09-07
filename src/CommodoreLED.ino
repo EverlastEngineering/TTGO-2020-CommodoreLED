@@ -12,7 +12,8 @@
 #include <WiFi.h>
 
 
-//to do: missing 0 on first boot
+// to do: on wakeup, don't show the last time until its been updated. perhaps just blank for one cycle?
+// more power tweaks!
 // https://diyprojects.io/t-watch-sleep-and-wake-up-with-bma423-accelerometer-or-esp32-button/#.YTbLCZ5KjG8
 
 TTGOClass *watch = nullptr;
