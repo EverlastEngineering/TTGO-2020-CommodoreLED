@@ -21,6 +21,7 @@ const lv_img_dsc_t *number[] = {
 	};
 
 str_datetime_t g_data;
+int set_clock_screen = 0;// 0 = clock, 1 = year, 2 = month / day
 
 void guiSetup(lv_obj_t * _screen) {
 
@@ -192,7 +193,18 @@ void processDisplay() {
             colonVisible = 0;
         }
         else if (screen == SETCLOCK) {
-            setClock();
+            if (set_clock_screen == 0) {
+                setClock();
+                colonVisible = 1;
+            }
+            else if (set_clock_screen == 1) {
+                setYear();
+                colonVisible = 0;
+            }
+            else if (set_clock_screen == 2) {
+                setMonthDay();
+                colonVisible = 0;
+            }
         }
         if (colonVisible == 1) 
         {
@@ -215,8 +227,49 @@ int proposed_digit[4] = {0,0,0,0};
 int settingClock = 0;
 int setClockTimer = 0;
 
+int proposedYear = 0;
+int proposedMonth = 0;
+int proposedDay = 0;
 int proposedHour = 0;
 int proposedMinute = 0;
+
+
+
+void setYear() {
+    setClockTimer++; // used to flash the digit very quickly to show which is being set
+
+    // Serial.printf("proposed_digits: %d %d %d %d\n",proposed_digit[0],proposed_digit[1],proposed_digit[2],proposed_digit[3]);
+    digit[0] =  proposed_digit[0];
+    digit[1] =  proposed_digit[1];
+    digit[2] =  proposed_digit[2];
+    digit[3] =  proposed_digit[3];
+    
+    if (setClockTimer % 2) {
+        digit[0] = 12; //empty
+        digit[2] = 12; //empty
+    }
+    else {
+        digit[1] = 12; //empty
+        digit[3] = 12; //empty
+    }
+}
+
+void setMonthDay() {
+    setClockTimer++; // used to flash the digit very quickly to show which is being set
+
+    // Serial.printf("proposed_digits: %d %d %d %d\n",proposed_digit[0],proposed_digit[1],proposed_digit[2],proposed_digit[3]);
+    digit[0] =  proposed_digit[0];
+    digit[1] =  proposed_digit[1];
+    digit[2] =  proposed_digit[2];
+    digit[3] =  proposed_digit[3];
+    
+    if (setClockTimer % 2) {
+        digit[settingDigit] = 12; //empty
+    }
+    else {
+        digit[settingDigit+1] = 12; //empty
+    }
+}
 
 void setClock() {
     setClockTimer++; // used to flash the digit very quickly to show which is being set
@@ -228,7 +281,10 @@ void setClock() {
         RTC_Date curr_datetime = watch->rtc->getDateTime();
         proposedHour = curr_datetime.hour;
         proposedMinute = curr_datetime.minute;
-        Serial.printf("Setting up clock to hour: %d", proposedHour);
+        proposedYear = curr_datetime.year;
+        proposedMonth = curr_datetime.month;
+        proposedDay = curr_datetime.day;
+        // Serial.printf("Setting up clock to hour: %d", proposedHour);
         proposed_digit[0] = (proposedHour/10) % 10;
         proposed_digit[1] = proposedHour % 10;
         proposed_digit[2] = (proposedMinute/10) % 10;
@@ -270,39 +326,116 @@ void receiveEventForSetClock(directions direction) {
     if (direction == UP)
     {
         Serial.println("UP");
-        if (settingDigit==0) {
-            proposedHour++;
+        if (set_clock_screen == 0) {
+            if (settingDigit==0) {
+                proposedHour++;
+                if (proposedHour < 0) proposedHour = 0;
+                if (proposedHour > 23) proposedHour = 23;
+            }
+            if (settingDigit==2) {
+                proposedMinute++;
+                if (proposedMinute < 0) proposedMinute = 59;
+                if (proposedMinute > 59) proposedMinute = 0;
+            }
         }
-        if (settingDigit==2) {
-            proposedMinute++;
+        else if (set_clock_screen == 1) {
+            proposedYear++;
+        }
+        else if (set_clock_screen == 2) {
+            if (settingDigit==0) {
+                proposedMonth++;
+            }
+            if (settingDigit==2) {
+                proposedDay++;
+            }
         }
     }
     else if (direction == DOWN)
     {
         Serial.println("DOWN");
-        if (settingDigit==0) {
-            proposedHour--;
-            if (proposedHour < 0) proposedHour = 0;
-            if (proposedHour > 23) proposedHour = 23;
+        if (set_clock_screen == 0) {
+            if (settingDigit==0) {
+                proposedHour--;
+                if (proposedHour < 0) proposedHour = 0;
+                if (proposedHour > 23) proposedHour = 23;
+            }
+            if (settingDigit==2) {
+                proposedMinute--;
+                if (proposedMinute < 0) proposedMinute = 59;
+                if (proposedMinute > 59) proposedMinute = 0;
+            }
         }
-        if (settingDigit==2) {
-            proposedMinute--;
-            if (proposedMinute < 0) proposedMinute = 0;
-            if (proposedMinute > 59) proposedMinute = 59;
+        else if (set_clock_screen == 1) {
+            proposedYear--;
+        }
+        else if (set_clock_screen == 2) {
+            if (settingDigit==0) {
+                proposedMonth--;
+            }
+            if (settingDigit==2) {
+                proposedDay--;
+            }
         }
     }
     else if (direction == RIGHT)
     {
         Serial.println("RIGHT");
-        settingDigit = 2;
+        if (set_clock_screen == 0) { 
+            if (settingDigit == 2)
+            {
+                set_clock_screen = 1;
+            }
+            settingDigit = 2;
+        }
+        else if (set_clock_screen == 1) { 
+            set_clock_screen = 2;
+            settingDigit = 0;
+        }
+        else if (set_clock_screen == 2) {
+            settingDigit = 2;
+        }
     }
     else if (direction == LEFT)
     {
         Serial.println("LEFT");
-        settingDigit = 0;
+        if (set_clock_screen == 0) { 
+            if (settingDigit == 2)
+            {
+               settingDigit = 0;
+            }
+        }
+        else if (set_clock_screen == 1) { 
+            set_clock_screen = 0;
+            settingDigit = 2;
+        }
+        else if (set_clock_screen == 2) {
+            if (settingDigit == 2) {
+                settingDigit = 0;
+            }
+            else {
+                set_clock_screen = 1;
+                settingDigit = 0;
+            }
+        }
     }
-    proposed_digit[0] = (proposedHour/10) % 10;
-    proposed_digit[1] = proposedHour % 10;
-    proposed_digit[2] = (proposedMinute/10) % 10;
-    proposed_digit[3] = proposedMinute % 10;
+
+
+    if (set_clock_screen == 0) { 
+        proposed_digit[0] = (proposedHour/10) % 10;
+        proposed_digit[1] = proposedHour % 10;
+        proposed_digit[2] = (proposedMinute/10) % 10;
+        proposed_digit[3] = proposedMinute % 10;
+    }
+    else if (set_clock_screen == 1) {
+        proposed_digit[0] = (proposedYear/1000) % 10;
+        proposed_digit[1] = (proposedYear/100) % 10;
+        proposed_digit[2] = (proposedYear/10) % 10;
+        proposed_digit[3] = proposedYear % 10;
+    }
+    else if (set_clock_screen == 2) {
+        proposed_digit[0] = (proposedMonth/10) % 10;
+        proposed_digit[1] = proposedMonth % 10;
+        proposed_digit[2] = (proposedDay/10) % 10;
+        proposed_digit[3] = proposedDay % 10;
+    }
 }

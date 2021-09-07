@@ -8,6 +8,8 @@
 int ctr_pressing = 0;
 int ctr_pressed_repeat = 0;
 int secret_mode = 0;
+int swipe_still_pressed = 0;
+int swipe_action = 0; 
 
 void event_cb( lv_obj_t * obj, lv_event_t event ) {
     // Serial.println("event_cb");
@@ -64,9 +66,28 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
         case LV_EVENT_PRESSING:
             Serial.printf("LV_EVENT_PRESSING: %d\n", ctr_pressing);
             ctr_pressing++;
+
             if (ctr_pressing > 60 && screen == TIME) {
                 // Serial.printf("LV_EVENT_PRESSING: %d\n", ctr_pressing);
                 screen = SECONDS;
+            }
+            else if (ctr_pressing == 10 && swipe_still_pressed) {
+                if ((swipe_action) == LV_GESTURE_DIR_BOTTOM) {
+                    if (screen == SETCLOCK) {
+                        // fire msg to decrement selected digit
+                        Serial.println("Number down!");
+                        receiveEventForSetClock(DOWN);
+                        ctr_pressing = 0;
+                    }
+                }
+                else if ((swipe_action) == LV_GESTURE_DIR_TOP) {
+                    if (screen == SETCLOCK) {
+                        // fire msg to increment selected digit
+                        Serial.println("Number up!");
+                        receiveEventForSetClock(UP);
+                        ctr_pressing = 0;
+                    }
+                }
             }
             else if (ctr_pressing > 0 && (screen == BLANK || (mode == BATTERY_MONITOR && retapTimer == 0))) {
                 // Serial.printf("LV_EVENT_PRESSING: %d\n", ctr_pressing);
@@ -98,9 +119,8 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
             //Serial.println("LV_EVENT_LONG_PRESSED");
 			break;
         case LV_EVENT_LONG_PRESSED_REPEAT:
-            ctr_pressed_repeat++;
+            // ctr_pressed_repeat++;
             //Serial.printf("LV_EVENT_LONG_PRESSED_REPEAT: %d\n", ctr_pressed_repeat);
-            
 			break;
         case LV_EVENT_RELEASED:
             // Serial.println("LV_EVENT_RELEASED");
@@ -109,10 +129,11 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
             }
             if (screen == SET537) {
                 Serial.println("screen set to SET537");
-                if (ctr_pressing > 60) {
+                if (ctr_pressing > 60 && !swipe_still_pressed) {
                     setTime();
                 }
             }
+            swipe_still_pressed = 0;
 			break;
         // case LV_EVENT_DRAG_BEGIN:
         //     Serial.println("LV_EVENT_DRAG_BEGIN");
@@ -176,6 +197,8 @@ void event_cb( lv_obj_t * obj, lv_event_t event ) {
                 }
             }
 			// Serial.println("LV_EVENT_GESTURE");
+            swipe_action = direction;
+            swipe_still_pressed = 1;
 			break;
         // case LV_EVENT_KEY:
         //     Serial.println("LV_EVENT_KEY");

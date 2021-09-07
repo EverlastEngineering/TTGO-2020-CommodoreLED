@@ -41,6 +41,8 @@
 	void displayNumerals();
 	void processDisplay();
 	void setTime();
+	void setMonthDay();
+	void setYear();
 	void receiveEventForSetClock(directions direction);
 
 #endif // _GUI_H
