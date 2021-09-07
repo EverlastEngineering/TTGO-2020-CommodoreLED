@@ -9,15 +9,19 @@
 #include "eventmgm.h"
 #include "gui.h"
 #include "qrcode.h"
+#include <WiFi.h>
 
 
 //to do: missing 0 on first boot
+// https://diyprojects.io/t-watch-sleep-and-wake-up-with-bma423-accelerometer-or-esp32-button/#.YTbLCZ5KjG8
 
 TTGOClass *watch = nullptr;
 
+
+
 bool irq = false;
 int digit[4] = {0,0,0,0};
-int displayed_digit[4] = {0,0,0,0};
+int displayed_digit[4] = {255,255,255,255};
 
 bool debug = false;
 
@@ -28,6 +32,8 @@ fades fade = FADINGIN;
 void setup()
 {
     Serial.begin(115200);
+    WiFi.mode(WIFI_OFF);
+
     watch = TTGOClass::getWatch();
     watch->begin();
     watch->lvgl_begin();
@@ -178,6 +184,9 @@ void setup()
                 screen = TIME; // put the screen back to TIME to 'reset' the watch if you get it all effed up lol
             }
             else if (powermode == LOWPOWER) {
+                // watch->openBL();     
+                // watch->displayWakeup();
+                // watch->startLvglTick();
                 powerMode(FULLPOWER);
                 targetpowermode = MEDIUMPOWER;
                 restartDimmerTimer();
@@ -217,10 +226,22 @@ void setup()
         if (powermode == LOWPOWER && fade == FADINGOUT) {
             blLevel = blLevel - 63; 
             if (blLevel <= 0) {
-                Serial.printf("turn off display\n");
+                Serial.printf("esp_light_sleep_start\n");
                 fade = NONE;
                 blLevel = retapCounter = retapTimer = dimmerTimer = 0;
+                // watch->closeBL();        // switch off backlight
+                // watch->displaySleep();   // switch off screen 
+                // watch->stopLvglTick();   // Pause LVGL handler
+                // watch->powerOff();
                 setCpuFrequencyMhz(10);
+                gpio_wakeup_enable ((gpio_num_t)AXP202_INT, GPIO_INTR_LOW_LEVEL);  
+                gpio_wakeup_enable ((gpio_num_t)BMA423_INT1, GPIO_INTR_LOW_LEVEL);  
+                esp_sleep_enable_gpio_wakeup();
+                esp_light_sleep_start();
+                // watch->powerOff();
+                // esp_deep_sleep_start();
+                // esp_light_sleep_start();
+
             }
             watch->bl->adjust(blLevel);
         }

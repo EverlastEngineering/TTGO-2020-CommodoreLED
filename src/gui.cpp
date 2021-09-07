@@ -17,7 +17,7 @@ const lv_img_dsc_t *number[] = {
 		&Number9,
 		&Colon, //10
 		&Dash, //11
-    &Empty //12
+        &Empty //12
 	};
 
 str_datetime_t g_data;
