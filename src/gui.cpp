@@ -317,7 +317,7 @@ void setTime() {
     settingClock = 0;
     Serial.println("TIME SET");
     RTC_Date curr_datetime = watch->rtc->getDateTime();
-    watch->rtc->setDateTime(curr_datetime.year, curr_datetime.month, curr_datetime.day, proposedHour, proposedMinute, 0);
+    watch->rtc->setDateTime(proposedYear, proposedMonth, proposedDay, proposedHour, proposedMinute, 0);
 }
 
 void receiveEventForSetClock(directions direction) {
@@ -419,6 +419,8 @@ void receiveEventForSetClock(directions direction) {
         }
     }
 
+    proposedMonth = monthLogic(proposedMonth);
+    proposedDay = dayLogic(proposedDay,proposedMonth,proposedYear);
 
     if (set_clock_screen == 0) { 
         proposed_digit[0] = (proposedHour/10) % 10;
@@ -438,4 +440,36 @@ void receiveEventForSetClock(directions direction) {
         proposed_digit[2] = (proposedDay/10) % 10;
         proposed_digit[3] = proposedDay % 10;
     }
+}
+
+int dayLogic(int day, int month, int year) {
+    int leapYear = !(year % 4);
+    int max_days = 31;
+    if (month == 2) {
+        max_days = 28;
+        if (leapYear == 1) {
+            max_days = 29;
+        }
+    }
+    else if (month == 4 || month == 6 || month == 9 || month == 11) {
+        max_days = 30;
+    }
+
+    if (day < 1) {
+        day = max_days;
+    }
+    else if (day > max_days) {
+        day = 1;
+    }
+    return day;
+}
+
+int monthLogic(int month) {
+    if (month < 1) {
+        return 12;
+    }
+    if (month > 12) {
+        return 1;
+    } 
+    return month;
 }

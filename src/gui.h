@@ -43,6 +43,8 @@
 	void setTime();
 	void setMonthDay();
 	void setYear();
+	int monthLogic(int month);
+	int dayLogic(int day, int month, int year);
 	void receiveEventForSetClock(directions direction);
 
 #endif // _GUI_H
