@@ -10,6 +10,7 @@
 #include "gui.h"
 #include "qrcode.h"
 #include <WiFi.h>
+#include <WebServer.h>
 
 
 // to do: on wakeup, don't show the last time until its been updated. perhaps just blank for one cycle?
@@ -30,10 +31,34 @@ modes mode = AUTHENTIC_TIME_MODE;
 screens screen = BLANK;
 fades fade = FADINGIN;
 
+WebServer server(80);
+
 void setup()
 {
     Serial.begin(115200);
-    WiFi.mode(WIFI_OFF);
+    WiFi.mode(WIFI_STA);
+    /* Put your SSID & Password */
+    const char* ssid = "GreyStoneManor24";  // Enter SSID here
+    const char* password = "6137594932";  //Enter Password here
+    WiFi.begin(ssid, password);
+    Serial.print("Connecting to WiFi.");
+    int conncounter = 0;
+    while (WiFi.status() != WL_CONNECTED) {
+        Serial.print('.');
+        delay(1000);
+        conncounter++;
+        if (conncounter > 10) {
+            break;
+        }
+    }
+    Serial.println();
+    Serial.println(WiFi.localIP());
+
+    Serial.println("Initializing WebServer.");
+    server.on("/", handle_OnConnect);
+    server.begin();
+    Serial.println();
+    Serial.println("HTTP server started");
 
     watch = TTGOClass::getWatch();
     watch->begin();
@@ -280,4 +305,23 @@ void setup()
 void loop()
 {
     lv_task_handler();
+}
+
+
+void handle_OnConnect() {
+//   LED1status = LOW;
+//   LED2status = LOW;
+  Serial.println("Request Handled");
+  server.send(200, "text/html", SendHTML()); 
+}
+
+String SendHTML(){
+    String ptr = "<!DOCTYPE html> <html>\n";
+    ptr +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
+    ptr +="<title>Commodore Watch</title>\n";
+    ptr +="<body>\n";
+    ptr +="<h1>Commodore Watch</h1>\n";
+    ptr +="<h3>Using Access Point(STA) Mode</h3>\n";
+    ptr +="</body></html>\n";
+    return ptr;
 }
