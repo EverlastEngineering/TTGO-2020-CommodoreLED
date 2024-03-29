@@ -38,8 +38,6 @@ void setup()
     Serial.begin(115200);
     WiFi.mode(WIFI_STA);
     /* Put your SSID & Password */
-    const char* ssid = "GreyStoneManor24";  // Enter SSID here
-    const char* password = "6137594932";  //Enter Password here
     WiFi.begin(ssid, password);
     Serial.print("Connecting to WiFi.");
     int conncounter = 0;
