@@ -32,6 +32,7 @@ fades fade = FADINGIN;
 
 void setup()
 {
+    setCpuFrequencyMhz(40); 
     Serial.begin(115200);
     WiFi.mode(WIFI_OFF);
 
@@ -178,6 +179,7 @@ void setup()
         watch->power->readIRQ();
         if (watch->power->isPEKShortPressIRQ())
         {
+            watch->power->clearIRQ();
             Serial.println("Side Button Press");
             if (powermode == FULLPOWER || powermode == MEDIUMPOWER) {
                 powerMode(LOWPOWER);
@@ -193,13 +195,12 @@ void setup()
                 restartDimmerTimer();
                 restartClockFaceTimer();
             }
-            watch->power->clearIRQ();
         }
         else if (watch->power->isPEKLongtPressIRQ()) {
-            Serial.println("Side Button Long Press");
             watch->power->clearIRQ();
+            Serial.println("Side Button Long Press");
         }
-
+        watch->power->clearIRQ();
         
         
         if (debug && screen == SETCLOCK) {
@@ -227,7 +228,6 @@ void setup()
         if (powermode == LOWPOWER && fade == FADINGOUT) {
             blLevel = blLevel - 63; 
             if (blLevel <= 0) {
-                Serial.printf("esp_light_sleep_start\n");
                 fade = NONE;
                 blLevel = retapCounter = retapTimer = dimmerTimer = 0;
                 // watch->closeBL();        // switch off backlight
@@ -236,13 +236,12 @@ void setup()
                 // watch->powerOff();
                 setCpuFrequencyMhz(10);
                 gpio_wakeup_enable ((gpio_num_t)AXP202_INT, GPIO_INTR_LOW_LEVEL);  
-                gpio_wakeup_enable ((gpio_num_t)BMA423_INT1, GPIO_INTR_LOW_LEVEL);  
+                gpio_wakeup_enable ((gpio_num_t)BMA423_INT1, GPIO_INTR_HIGH_LEVEL);  
                 esp_sleep_enable_gpio_wakeup();
                 esp_light_sleep_start();
                 // watch->powerOff();
                 // esp_deep_sleep_start();
                 // esp_light_sleep_start();
-
             }
             watch->bl->adjust(blLevel);
         }
