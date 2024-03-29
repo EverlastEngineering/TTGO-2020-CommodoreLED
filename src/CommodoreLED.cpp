@@ -2,6 +2,7 @@
  * Commodore LED Watch recreation for the TTGO Watch 2020 edition.
  * Written by Everlast Engineering
  * */
+#include "Arduino.h"
 #include "config.h"
 #include "timers.h"
 #include "headers.h"
@@ -236,7 +237,7 @@ void setup()
                 // watch->powerOff();
                 setCpuFrequencyMhz(10);
                 gpio_wakeup_enable ((gpio_num_t)AXP202_INT, GPIO_INTR_LOW_LEVEL);  
-                gpio_wakeup_enable ((gpio_num_t)BMA423_INT1, GPIO_INTR_HIGH_LEVEL);  
+                // gpio_wakeup_enable ((gpio_num_t)BMA423_INT1, GPIO_INTR_HIGH_LEVEL);  
                 esp_sleep_enable_gpio_wakeup();
                 esp_light_sleep_start();
                 // watch->powerOff();
